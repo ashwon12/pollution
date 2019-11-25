@@ -3,11 +3,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
+
+import java.util.*;
 
 public class Area extends JPanel {
 	
@@ -89,7 +92,6 @@ public class Area extends JPanel {
 	public Area() {
 		
 		this.setLayout(new GridLayout(1,2));
-
 		Left();
 		Right();
 	}
@@ -313,7 +315,8 @@ public class Area extends JPanel {
 		
 		try {
 			System.out.println("시작 날짜: "+startDate);
-			System.out.println("끝 날짜: "+endDate);
+			
+			//System.out.println("끝 날짜: "+endDate);
 			
 			//1월 넘어가는거 나오면 표시는 하되 데이터가 없습니다. 하고싶은뎅,,,, - 기준으로 읽어서 앞이 2019인 경우는 null로하도록하자
 			conn = DB.makeConnection();
@@ -329,7 +332,10 @@ public class Area extends JPanel {
 			pstmt.setString(2,startDate);
 			pstmt.setString(3,endDate);
 			
-			System.out.println(pstmt.toString());
+			StringBuilder sql2 = new StringBuilder();
+			sql2.append("SELECT "+pollution);
+			sql2.append(" FROM degree WHERE area = ? AND date = ?");
+			
 			//실행결과 저장
 			rs = pstmt.executeQuery();
 			rs.beforeFirst();
@@ -341,26 +347,63 @@ public class Area extends JPanel {
 			
 			String temp[] = new String[2];
 			int count = 0;
+			
+			Calendar cal= Calendar.getInstance();
+			String[] date = startDate.trim().split("-");
+			
+			switch(date[1]) { //월
+			case "10": case "11": case "12":
+				break;
+				default:
+					date[1] = "0"+date[1];
+			}
+			System.out.println(date[1]);
+			switch(date[2]) { //일
+			case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":
+				date[2] = "0"+date[2];
+				break;
+				default:
+			}
+			System.out.println(date[2]);
+			String calstart = date[0]+"-"+date[1]+"-"+date[2];
+			System.out.println(calstart);
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				Date start = format.parse(calstart);
+				cal.setTime(start);
+			}catch(Exception e) {
+				System.out.println("오류 :"+e);
+			}
 			while(rs.next()) {
-				
-				temp[0] = rs.getString("date");
+				//캘린더 포맷을 설정하고 캘린더를 이용해 일주일 날짜를 먼저 입력한다.
+				temp[0] = format.format(cal.getTime()); //set
 				temp[1] = rs.getString(pollution);
 				
-				if(rs.getString(pollution).length() == 0) {
-					temp[1] = "데이터가 없습니다.";
+				pstmt = conn.prepareStatement(sql2.toString());
+				pstmt.setString(1,area);
+				pstmt.setString(2,temp[0]);
+				ResultSet rs2 = pstmt.executeQuery();
+				if(!rs2.isBeforeFirst()) { //날짜가 존재하지 않아 아예 일거오지 않은 시작, 중간 부분들
+					temp[1] = "";
+					rs.previous();
 				}
+				
+				//날짜가 없는건 아예 읽지를 않는다....
 				model = (DefaultTableModel) table.getModel();
 				model.addRow(temp);
 				
+				cal.add(Calendar.DATE, 1); //하루 늘려주기
 				count++;
 			}
-			//String[] nextYear = {"2019-01-01","2019-01-02","2019-01-03","2019-01-04","2019-01-05","2019-01-06","2019-01-07"};
-			if(count < 7) {//2019년으로 넘어간 경우 2019년 1월 데이터는 없으므로.
+			
+			if(count < 7) {//날짜가 존재하지않아 아예 읽어오지 않은 마지막 부분들
 				for(int i = 0; i < 7-count; i++) {
 					//빈만큼 비었다고 알려준다.
-					temp[0] = "데이터가 없습니다.";
-					temp[1] = "데이터가 없습니다.";
-					
+					//temp[0] = "데이터가 없습니다.";
+					temp[0] = format.format(cal.getTime());
+					temp[1] = "";
+				
+					cal.add(Calendar.DATE, 1); //하루 늘려주기
 					model = (DefaultTableModel) table.getModel();
 					model.addRow(temp);
 				}
