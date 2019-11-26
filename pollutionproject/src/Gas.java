@@ -145,7 +145,7 @@ public class Gas extends JPanel {
 			model = (DefaultTableModel) table.getModel();
 			model.addRow(new String[]{"","","","",""});
 		}
-		
+		table.setRowHeight(25);
 		scrollpane = new JScrollPane(table);
 		scrollpane.setPreferredSize(new Dimension(400,150));
 		
