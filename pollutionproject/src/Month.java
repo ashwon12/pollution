@@ -28,12 +28,16 @@ public class Month extends Average{
 	private JScrollPane scrollpane;
 	
 	private JLabel unit;
-	private JButton show_graph;//그래프로 보기 버튼
+	private JButton showGraph;//그래프로 보기 버튼
+	private JFrame monthGraph;
 
 	//폰트
 	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
 	private Font middle = new Font("맑은 고딕", Font.PLAIN, 17);
 	private Font small = new Font("맑은 고딕", Font.BOLD, 13);
+	
+	//리스너
+	Listener Listener = new Listener();
 	
 	public Month() {
 		this.setLayout(new GridLayout(1,2));
@@ -82,8 +86,7 @@ public class Month extends Average{
 		result.setFont(middle);
 		result.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		LeftListener Listener = new LeftListener();
+		//리스너 달기
 		result.addActionListener(Listener);
 		
 		//패널에 추가
@@ -122,7 +125,7 @@ public class Month extends Average{
 		table = new JTable(model); 
 		for(int i = 0; i < 7; i++) {
 			model = (DefaultTableModel) table.getModel();
-			model.addRow(new String[]{""});
+			model.addRow(new String[]{"",""});
 		}
 		scrollpane = new JScrollPane(table);
 		scrollpane.setPreferredSize(new Dimension(400,135));
@@ -134,17 +137,16 @@ public class Month extends Average{
 		unit.setFont(small);
 		
 		//버튼
-		show_graph = new JButton("그래프 보기");
-		show_graph.setFont(middle);
-		show_graph.setBackground(new Color(242,242,242));
+		showGraph = new JButton("그래프 보기");
+		showGraph.setFont(middle);
+		showGraph.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		RightListener Listener = new RightListener();
-		show_graph.addActionListener(Listener);
+		//리스너 달기
+		showGraph.addActionListener(Listener);
 		
 		North.add(label3);
 		Center.add(scrollpane);
-		South.add(show_graph);
+		South.add(showGraph);
 		right.add(North);
 		right.add(Center);
 		right.add(unit);
@@ -171,8 +173,46 @@ public class Month extends Average{
 			return null;
 		}
 	}
-	private class LeftListener implements ActionListener{
+	
+	private void setTable(ArrayList<Integer> selectMonth,double[] getMonthAverage) {
+		int size = selectMonth.size();
+		Object[] temp = new Object[2];
+		int count = 0;
 		
+		//테이블 초기화
+		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
+		model.setNumRows(0);
+		
+		//테이블 값 변경
+		for(int i = 0; i < size+1; i++) {
+			if(i == size) {
+				temp[0] = "월 전체 평균";
+			}else {
+				temp[0] = (selectMonth.get(i)+1) + "월";
+			}
+			
+			temp[1] = getMonthAverage[i];
+			
+			model = (DefaultTableModel) table.getModel();
+			model.addRow(temp);
+			count++;
+		}
+		
+		
+		//선택한 달이 6개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
+		if(count < 7) {
+			for(int i = 0; i < 7-count; i++) {
+				temp[0] = "";
+				temp[1] = "";
+				model = (DefaultTableModel) table.getModel();
+				model.addRow(temp);
+			}
+		}
+	}
+	
+	private class Listener implements ActionListener{
+		private int rowSize;
+		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == result) { //결과보기 버튼을 눌렀을 경우
@@ -231,59 +271,43 @@ public class Month extends Average{
 				
 				//테이블값 설정
 				setTable(selectMonth,getMonthAverage);
+				//행 크기 설정
+				rowSize = size+1;
+				//오염물질 종류 설정
+				myGas = selectGas;
 				
-			}
-		}
-	}
-	private void setTable(ArrayList<Integer> selectMonth,double[] getMonthAverage) {
-		int size = selectMonth.size();
-		Object[] temp = new Object[2];
-		int count = 0;
-		
-		//테이블 초기화
-		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
-		model.setNumRows(0);
-		
-		//테이블 값 변경
-		for(int i = 0; i < size+1; i++) {
-			if(i == size) {
-				temp[0] = "월 전체 평균";
-			}else {
-				temp[0] = (selectMonth.get(i)+1) + "월";
-			}
-			
-			temp[1] = getMonthAverage[i];
-			
-			model = (DefaultTableModel) table.getModel();
-			model.addRow(temp);
-			count++;
-		}
-		
-		
-		//선택한 달이 6개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
-		if(count < 7) {
-			for(int i = 0; i < 7-count; i++) {
-				temp[0] = "";
-				temp[1] = "";
-				model = (DefaultTableModel) table.getModel();
-				model.addRow(temp);
-			}
-		}
-	}
-	
-	private class RightListener implements ActionListener{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == show_graph) {
+			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
 					//월별 그래프 x축 : 내가 선택한 각 월 배열 (배열 마지막에는 "총 평균"이라는 스트링이 들어감)
+					//데이터 : 내가 선택한 기체의 x축에 맞는 값
+					String[] x = new String[rowSize]; //x축
+					String[] data = new String[rowSize]; //데이터
+					
+					//x축 값 가져오기
+					for(int i = 0; i < rowSize; i++) {
+						x[i] = (String)table.getValueAt(i,0);
+					}
+					//데이터 값 가져오기
+					for(int i = 0; i < rowSize; i++) {
+						data[i] = Double.toString((double) table.getValueAt(i,1));
+					}
+					
+					/*
+					 * myGas =>데이터베이서 열 이름과 같게 설정
+					 * 이산화질소	: nitrogen
+					 * 일산화탄소	: carbon
+					 * 오존		: ozone
+					 * 아황산가스	: sulfur
+					 * 미세먼지	: fine_dust
+					 * 초미세먼지	: ultrafine_dust
+					 * */
+					//monthGraph = new monthGraph(x,data,myGas);
+					//monthGraph.setVisible(true);
 				}
 			}
 		}
 	}
-
-
 }

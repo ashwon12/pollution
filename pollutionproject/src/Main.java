@@ -252,6 +252,7 @@ public class Main extends JFrame{
 				pickCard.show(cards,"function_Quiz");
 			}else if(e.getSource() == m_save || e.getSource() == t_save) {
 				System.out.println("저장이 눌렸어여");
+				
 			}
 		}
 	}

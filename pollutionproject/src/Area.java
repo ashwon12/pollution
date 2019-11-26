@@ -78,16 +78,20 @@ public class Area extends JPanel {
 	
 	private JTable table;
 	private DefaultTableModel model;
-	private String title[] = {"날짜","농도	"};
+	private String title[] = {"날짜","농도"};
 	private JScrollPane scrollpane;
 	
 	private JLabel unit; //단위
 	private JButton showGraph;
+	private JFrame areaGraph;
 	
 	//폰트
 	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
 	private Font middle = new Font("맑은 고딕", Font.PLAIN, 17);
 	private Font small = new Font("맑은 고딕", Font.BOLD, 13);
+	
+	//리스너
+	Listener Listener = new Listener();
 	
 	public Area() {
 		
@@ -177,8 +181,7 @@ public class Area extends JPanel {
 		showResult.setFont(middle);
 		showResult.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		LeftListener Listener = new LeftListener();
+		//리스너 달기
 		showResult.addActionListener(Listener);
 		
 		//패널에 추가 
@@ -243,8 +246,7 @@ public class Area extends JPanel {
 		showGraph.setFont(middle);
 		showGraph.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		RightListener Listener = new RightListener();
+		//리스너 달기
 		showGraph.addActionListener(Listener);
 		
 		//패널추가
@@ -341,7 +343,6 @@ public class Area extends JPanel {
 			rs.beforeFirst();
 			
 			//테이블 값 설정
-			// String title[] = {"날짜","농도"};
 			model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
 			model.setNumRows(0);
 			
@@ -357,16 +358,16 @@ public class Area extends JPanel {
 				default:
 					date[1] = "0"+date[1];
 			}
-			System.out.println(date[1]);
+			//System.out.println(date[1]);
 			switch(date[2]) { //일
 			case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":
 				date[2] = "0"+date[2];
 				break;
 				default:
 			}
-			System.out.println(date[2]);
+			//System.out.println(date[2]);
 			String calstart = date[0]+"-"+date[1]+"-"+date[2];
-			System.out.println(calstart);
+			//System.out.println(calstart);
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 			try {
 				Date start = format.parse(calstart);
@@ -416,7 +417,8 @@ public class Area extends JPanel {
 		}
 	
 	}
-	private class LeftListener implements ActionListener{
+	private class Listener implements ActionListener{
+		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showResult) { //결과보기 버튼을 눌렀을 경우
@@ -449,21 +451,41 @@ public class Area extends JPanel {
 				String endDate = getEndDate(selectMonth.replaceAll("[^0-9]",""),selectDay.replaceAll("[^0-9]",""));
 				//setTable함수를 만들어서 내 선택사항을 보낸다.
 				setTable(selectArea,selectGas,startDate,endDate);
-			}
-		}
-	}
-	
-	private class RightListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == showGraph) {
+				
+				myGas = selectGas;
+			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");	
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
-					//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지
+					//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지(무조건 7개)
 					//지역별 그래프 y축 : 기체 농도
+					
+					String[] x = new String[7];
+					String[] data = new String[7];
+					
+					//x축 가져오기
+					for(int i = 0; i < 7; i++) {
+						x[i] = (String)table.getValueAt(i, 0);
+					}
+					
+					//데이터 가져오기
+					for(int i = 0; i < 7; i++) {
+						data[i] = (String)table.getValueAt(i, 1);
+					}
+					
+					/*
+					 * myGas =>데이터베이서 열 이름과 같게 설정
+					 * 이산화질소	: nitrogen
+					 * 일산화탄소	: carbon
+					 * 오존		: ozone
+					 * 아황산가스	: sulfur
+					 * 미세먼지	: fine_dust
+					 * 초미세먼지	: ultrafine_dust
+					 * */
+					//areaGraph = new areaGraph(x,data,myGas);
+					//areaGraph.setVisible(true);
 				}
-				
 			}
 		}
 	}

@@ -33,6 +33,7 @@ public class Gas extends JPanel {
 	
 	private JLabel unit;
 	private JButton showGraph;
+	private JFrame gasGraph;
 	
 	//폰트
 	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
@@ -44,6 +45,9 @@ public class Gas extends JPanel {
 	private Icon i2 = new ImageIcon("./images/2.png");//보통
 	private Icon i3 = new ImageIcon("./images/3.png");//나쁨
 	private Icon i4 = new ImageIcon("./images/4.png");//매우나쁨
+	
+	//리스너 추가
+	Listener Listener = new Listener();
 	
 	public Gas() {
 		this.setLayout(new GridLayout(1,2));
@@ -97,8 +101,7 @@ public class Gas extends JPanel {
 		showResult.setFont(middle);
 		showResult.setBackground(new Color(242,242,242));
             
-		//리스너 호출
-		LeftListener Listener = new LeftListener();
+		//리스너 달기
 		showResult.addActionListener(Listener);
         
 		//패널추가
@@ -170,8 +173,7 @@ public class Gas extends JPanel {
 		showGraph.setFont(middle);
 		showGraph.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		RightListener Listener = new RightListener();
+		//리스너 달기
 		showGraph.addActionListener(Listener);
 		
 		//패널추가
@@ -208,7 +210,7 @@ public class Gas extends JPanel {
 	private void setTable(String selectGas) {
 		
 		try {
-			System.out.println("선택 오염물질: "+selectGas);
+			//System.out.println("선택 오염물질: "+selectGas);
 			conn = DB.makeConnection();
 			
 			StringBuilder sql = new StringBuilder();
@@ -253,125 +255,82 @@ public class Gas extends JPanel {
 	//기체 종류와 값을 판단해 아이콘을 설정해준다.
 	private Object[] setData(Object t_data,String selectGas) {
 		double data = Double.parseDouble((String)t_data);
-		Object[] r = new Object[2];
+		Object[][] r = {
+				{"좋음", i1},
+				{"보통", i2},
+				{"나쁨",i3},
+				{"매우나쁨",i4}
+		};
 		switch(selectGas) {
 		case "nitrogen":
 			if(data <= 0.030) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 0.60) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 0.200) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 0.200) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
 		case "carbon":
 			if(data <= 2.0) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 9.0) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 15.0) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 15.0) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
 		case "ozone":
 			if(data <= 0.030) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 0.090) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 0.150) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 0.150) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
 		case "sulfur":
 			if(data <= 0.020) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 0.050) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 0.150) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 0.150) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
 		case "fine_dust":
 			if(data <= 30) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 80) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 150) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 150) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
 		case "ultrafine_dust":
 			if(data <= 15) {
-				r[0] = "좋음";
-				r[1] = i1;
-				return r;
+				return r[0];
 			}else if(data <= 35) {
-				r[0] = "보통";
-				r[1] = i2;
-				return r;
+				return r[1];
 			}else if(data <= 75) {
-				r[0] = "나쁨";
-				r[1] = i3;
-				return r;
+				return r[2];
 			}else if(data > 75) {
-				r[0] = "매우나쁨";
-				r[1] = i4;
-				return r;
+				return r[3];
 			}else {
 				return null;
 			}
@@ -379,7 +338,8 @@ public class Gas extends JPanel {
 			return null;
 		}
 	}
-	private class LeftListener implements ActionListener{
+	private class Listener implements ActionListener{
+		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
@@ -410,22 +370,46 @@ public class Gas extends JPanel {
 				
 				//선택한 가스를 가지고 테이블 데이터를 설정하는 함수 호출
 				setTable(selectGas);
-			}
-		}
-	}
-	
-	private class RightListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == showGraph) {
+				
+				myGas = selectGas;
+			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
 					//기체별 그래프 x축 : 25개 날짜와 그에 해당하는 지역 이름
-				}
+					String[] x = new String[25];
+					String[] data = new String[25];
+					
+					//x축 가져오기(날짜 + 지역이름)
+					/* 스트링 형태 : 
+					 * 2018-01-01
+					 * 세곡
+					 */
+					for(int i = 0; i < 25; i++) {
+						x[i] = (String)table.getValueAt(i, 0);
+						x[i] += "\n"+(String)table.getValueAt(i, 1);
+					}
+					
+					//데이터 가져오기
+					for(int i = 0; i < 25; i++) {
+						data[i] = (String)table.getValueAt(i, 2);
+					}
+					
+					/*
+					 * myGas =>데이터베이서 열 이름과 같게 설정
+					 * 이산화질소	: nitrogen
+					 * 일산화탄소	: carbon
+					 * 오존		: ozone
+					 * 아황산가스	: sulfur
+					 * 미세먼지	: fine_dust
+					 * 초미세먼지	: ultrafine_dust
+					 * */
+					//gasGraph = new gasGraph(x,data,myGas);
+					//gasGraph.setVisible(true);
 				
+				}
 			}
 		}
 	}
-	
 }

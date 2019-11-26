@@ -35,6 +35,9 @@ public class Season extends Average{
 	private Font middle = new Font("맑은 고딕", Font.PLAIN, 17);
 	private Font small = new Font("맑은 고딕", Font.BOLD, 13);
 	
+	//리스너
+	Listener Listener = new Listener();
+	
 	public Season() {
 		this.setLayout(new GridLayout(1,2));
 		Left();
@@ -84,8 +87,7 @@ public class Season extends Average{
 		showResult.setFont(middle);
 		showResult.setBackground(new Color(242,242,242));
 		
-		//리스너 호출
-		LeftListener Listener = new LeftListener();
+		//리스너 달기
 		showResult.addActionListener(Listener);
 		
 		//패널추가
@@ -122,7 +124,7 @@ public class Season extends Average{
 			table = new JTable(model);
 			for(int i = 0; i < 5; i++) {
 				model = (DefaultTableModel) table.getModel();
-				model.addRow(new String[]{""});
+				model.addRow(new String[]{"",""});
 			}
 			table.setRowHeight(19);
 			scrollpane = new JScrollPane(table);
@@ -139,8 +141,7 @@ public class Season extends Average{
 			showGraph.setFont(middle);
 			showGraph.setBackground(new Color(242,242,242));
 			
-			//리스너 호출
-			RightListener Listener = new RightListener();
+			//리스너 달기
 			showGraph.addActionListener(Listener);
 			
 			North.add(label3);
@@ -172,8 +173,43 @@ public class Season extends Average{
 			return null;
 		}
 	}
-	
-	private class LeftListener implements ActionListener{
+	private void setTable(ArrayList<String> selectSeason, double[] getSeasonAverage) {
+		int size = selectSeason.size();
+		Object[] temp = new Object[2];
+		int count = 0;
+		
+		//테이블 초기화
+		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
+		model.setNumRows(0);
+		
+		//테이블 값 변경
+		for(int i = 0; i < size+1; i++) {
+			if(i == size) {
+				temp[0] = "계절 전체 평균";
+			}else {
+				temp[0] = (selectSeason.get(i));
+			}
+			
+			temp[1] = getSeasonAverage[i];
+			
+			model = (DefaultTableModel) table.getModel();
+			model.addRow(temp);
+			count++;
+		}
+		
+		//선택한 계절이 4개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
+		if(count < 5) {
+			for(int i = 0; i < 5-count; i++) {
+				temp[0] = "";
+				temp[1] = "";
+				model = (DefaultTableModel) table.getModel();
+				model.addRow(temp);
+			}
+		}
+	}
+	private class Listener implements ActionListener{
+		private int rowSize;
+		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showResult) { //결과보기 버튼을 눌렀을 경우
@@ -224,7 +260,7 @@ public class Season extends Average{
 				int count = 0;
 				//선택한 계절의 월별 각 기체 평균을 구한다.
 				for(String s: selectSeason) {
-					System.out.println(s+"선택");
+					//System.out.println(s+"선택");
 					switch(s) {
 					case "봄":
 						//각 기체의 3,4,5월 평균을 가져온다
@@ -268,70 +304,53 @@ public class Season extends Average{
 				double total = 0;
 				for(int i = 0; i < count; i++) {
 					total += getSeasonAverage[i];
-					System.out.println("각계절값: "+getSeasonAverage[i]);
+					//System.out.println("각계절값: "+getSeasonAverage[i]);
 				}
 				getSeasonAverage[count] =  Math.round((total/size*1000))/1000.0;
-				System.out.println("총 평균: "+getSeasonAverage[count]);
+				//System.out.println("총 평균: "+getSeasonAverage[count]);
 				
 				//테이블 값 설정
 				setTable(selectSeason,getSeasonAverage);
-			}
-		}
-	}
-	
-	private void setTable(ArrayList<String> selectSeason, double[] getSeasonAverage) {
-		int size = selectSeason.size();
-		Object[] temp = new Object[2];
-		int count = 0;
-		
-		//테이블 초기화
-		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
-		model.setNumRows(0);
-		
-		//테이블 값 변경
-		for(int i = 0; i < size+1; i++) {
-			if(i == size) {
-				temp[0] = "계절 전체 평균";
-			}else {
-				temp[0] = (selectSeason.get(i));
-			}
-			
-			temp[1] = getSeasonAverage[i];
-			
-			model = (DefaultTableModel) table.getModel();
-			model.addRow(temp);
-			count++;
-		}
-		
-		//선택한 계절이 4개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
-		if(count < 5) {
-			for(int i = 0; i < 5-count; i++) {
-				temp[0] = "";
-				temp[1] = "";
-				model = (DefaultTableModel) table.getModel();
-				model.addRow(temp);
-			}
-		}
-	}
-	private class RightListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == showGraph) {
+				//행 크기 설정
+				rowSize = size+1;
+				//오염물질 종류 설정
+				myGas = selectGas;
+				
+			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
 					//계절별 그래프 x축 : 내가 선택한 각 계절 배열 (배열 마지막에는 "총 평균"이라는 스트링이 들어감)
-					//테이블 값을 가져온다.
+					//데이터 : 내가 선택한 기체의 x축에 맞는 값
+					//행의 개수를 알면 좋을텐데...
+					String[] x = new String[rowSize]; //축
+					String[] data = new String[rowSize]; //데이터
+		
+					//x축 값 가져오기
+					for(int i = 0; i < rowSize; i++) {
+						x[i] = (String)table.getValueAt(i,0);
+					}
+					//데이터 값 가져오기
+					for(int i = 0; i < rowSize; i++) {
+						data[i] = Double.toString((double) table.getValueAt(i,1));
+					}
 					
-					Object[] x;
-					Object[] data;
-					
+					/*
+					 * myGas =>데이터베이서 열 이름과 같게 설정
+					 * 이산화질소	: nitrogen
+					 * 일산화탄소	: carbon
+					 * 오존		: ozone
+					 * 아황산가스	: sulfur
+					 * 미세먼지	: fine_dust
+					 * 초미세먼지	: ultrafine_dust
+					 * */
+					//seasonGraph = new seasonGraph(x,data,myGas);
+					//seasonGraph.setVisible(true);
 				}
-				
 			}
 		}
 	}
-	
 }
 
 
