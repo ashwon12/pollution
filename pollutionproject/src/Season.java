@@ -1,6 +1,8 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.table.*;
+
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -9,27 +11,24 @@ public class Season extends Average{
 	private JPanel left, right; //왼쪽 : 선택, 오른쪽 : 결과
 	
 	//왼쪽 패널 구성 요소
-	private JPanel p1,p2,p3;
-	private JLabel label1;//달을 선택하라는 안내 라벨
+	private JPanel p1,p2,p3,p4;
+	private JLabel label1,label2;//달을 선택하라는 안내 라벨
 	private JCheckBox[] season = new JCheckBox[4];
+	private JComboBox<String> gasCombo;
+	private String Gas[]= {"이산화질소","오존","일산화탄소","아황산가스","미세먼지","초미세먼지"};
 	private JButton showResult;//결과 보기 버튼
 	
 	//오른쪽패널구성
 	private JPanel North,Center,South;
-	private JLabel label2;
+	private JLabel label3;
 	private JTable table;
-	private String header[] = {"오염물질","평균"};
-	private String contents[][] = {
-			{"이산화질소",""},
-			{"오존 ",""},
-			{"이산화탄소",""},
-			{"아황산가스",""},
-			{"미세먼지",""},
-			{"초미세먼지",""}
-			};
+	private String title[] = {"계절","농도"};
+	private DefaultTableModel model;
 	private JScrollPane scrollpane;
+	
 	private JLabel unit;
 	private JButton showGraph;
+	private JFrame seasonGraph;
 	
 	//폰트
 	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
@@ -45,18 +44,23 @@ public class Season extends Average{
 	private void Left() {
 		
 		//레이아웃 나누기 
-		left = new JPanel (new GridLayout(3,1));
+		left = new JPanel (new GridLayout(4,1));
 		p1 = new JPanel(); 
 		p2 = new JPanel(new GridLayout(2,2));
-		p3 = new JPanel();
+		p3 = new JPanel(new FlowLayout (FlowLayout.CENTER,30,60));
+		p4 = new JPanel(new FlowLayout (FlowLayout.CENTER,0,50));
 		
 		//배경색 설정
 		p1.setBackground(new Color(250,250,250));
-		p3.setBackground(new Color(250,250,250));
+		p2.setBackground(new Color(250,250,250));
+	    p3.setBackground(new Color(250,250,250));
+	    p4.setBackground(new Color(250,250,250));
 		
 		//레이블 작성
-		label1 = new JLabel("<html><br><br><center>선택한 계절에 대한 <br> 기체 농도 평균 조회입니다");
+		label1 = new JLabel("<html><br><br><center>선택한 계절에 대한 <br> 선택한 오염물질 농도 평균 조회입니다");
+		label2 = new JLabel("오염물질 선택 :");
 		label1.setFont(Big);
+		label2.setFont(middle);
 		
 		//체크박스 설정
 		season[0] = new JCheckBox("봄");
@@ -71,6 +75,10 @@ public class Season extends Average{
 			p2.add(season[i]);
 		}
 		
+		//콤보박스
+	    gasCombo = new JComboBox<String>(Gas);
+	    gasCombo.setBackground(Color.white);
+		
 		//버튼
 		showResult = new JButton("결과보기");
 		showResult.setFont(middle);
@@ -82,12 +90,15 @@ public class Season extends Average{
 		
 		//패널추가
 		p1.add(label1);
-		p3.add(showResult);
+		p3.add(label2);
+        p3.add(gasCombo);
+		p4.add(showResult);
      
-        left.add(p1);
+		left.add(p1);
         left.add(p2);
         left.add(p3);
-		
+        left.add(p4);
+        
 		add(left);
 	}
 	
@@ -103,16 +114,22 @@ public class Season extends Average{
 			South.setBackground(Color.white);
 			
 			//라벨은 액션리스너에서 바꿔준다.
-			label2 = new JLabel("<html><br><br><br>선택한 결과 입니다.");
-			label2.setFont(middle);
+			label3 = new JLabel("<html><br><br><br>선택한 결과 입니다.");
+			label3.setFont(middle);
 			
 			//테이블
-			table = new JTable(contents, header); //contents에서 내용을 가지고 있으면 된다.
+			model = new DefaultTableModel(title,0);
+			table = new JTable(model);
+			for(int i = 0; i < 5; i++) {
+				model = (DefaultTableModel) table.getModel();
+				model.addRow(new String[]{""});
+			}
+			table.setRowHeight(19);
 			scrollpane = new JScrollPane(table);
-			scrollpane.setPreferredSize(new Dimension(400,119));
+			scrollpane.setPreferredSize(new Dimension(400,118));
 			
 			//단위
-			unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 이산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
+			unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 일산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
 			unit.setHorizontalAlignment(JLabel.CENTER);
 			unit.setBackground(Color.white);
 			unit.setFont(small);
@@ -126,7 +143,7 @@ public class Season extends Average{
 			RightListener Listener = new RightListener();
 			showGraph.addActionListener(Listener);
 			
-			North.add(label2);
+			North.add(label3);
 			Center.add(scrollpane);
 			South.add(showGraph);
 			right.add(North);
@@ -135,6 +152,25 @@ public class Season extends Average{
 			right.add(South);
 			
 			add(right);
+	}
+	
+	private String changeEnglish(String korean) {
+		switch(korean) {
+		case "이산화질소":
+			return "nitrogen";
+		case "일산화탄소":
+			return "carbon";
+		case "오존":
+			return "ozone";
+		case "아황산가스":
+			return "sulfur";
+		case "미세먼지":
+			return "fine_dust";
+		case "초미세먼지":
+			return "ultrafine_dust";
+		default:
+			return null;
+		}
 	}
 	
 	private class LeftListener implements ActionListener{
@@ -146,6 +182,7 @@ public class Season extends Average{
 				String temp = "<html><br><br><br>다음은 ";
 				boolean first = false;
 				ArrayList<String> selectSeason = new ArrayList<String>(); //몇월을 선택했는지 알아야한다. ->arrayList
+				String selectGas = ""; //선택한 기체
 				
 				for(int i = 0; i < 4; i++) {
 					if(season[i].isSelected()) {
@@ -161,31 +198,30 @@ public class Season extends Average{
 						continue;
 					}
 				}
+			
+				//내가 선택한 오염물질 종류를 알아야한다.
+				selectGas = changeEnglish((String)gasCombo.getSelectedItem());
+				temp+=" "+(String)gasCombo.getSelectedItem();
 				temp+="의 평균 농도입니다.<br><br></html>";
-					
+			
 				//아무 계절도 선택하지 않은 경우
 				if(selectSeason.size() == 0) {
 					JOptionPane.showMessageDialog(null,"계절을 선택하지 않았습니다!");
 					return;
 				}
 					
-				label2.setText(temp);
+				label3.setText(temp);
 					
-				double[] gasAverage = new double[6];
-				/* 
-				 * 이산화질소 0
-				 * 오존 1
-				 * 이산화탄소 2
-				 * 아황산가스 3
-				 * 미세먼지 4
-				 * 초미세먼지 5
-				 */
-				//초기화
-				for(int i = 0; i < 6; i++) {
-					gasAverage[i] = 0;
-				}
-				int total = 0;
+				//선택 정보를 통해 데이터를 맞게 가져온다.
+				int size = selectSeason.size();
+				double[] getSeasonAverage = new double[size+1]; //마지막에 선택계절 총 평균을 넣어준다. 데이터 값이 들어갈거
 				
+				//0으로 초기화
+				for(int i = 0; i < size; i++) {
+					getSeasonAverage[i] = 0;
+				}
+				
+				int count = 0;
 				//선택한 계절의 월별 각 기체 평균을 구한다.
 				for(String s: selectSeason) {
 					System.out.println(s+"선택");
@@ -193,100 +229,110 @@ public class Season extends Average{
 					case "봄":
 						//각 기체의 3,4,5월 평균을 가져온다
 						for(int m = 2; m < 5; m++) {
-							System.out.println((m+1)+"월 평균");
-							gasAverage[0] += getAverage(m,"nitrogen"); //인수: 가져올 월
-							gasAverage[1] += getAverage(m,"ozone");
-							gasAverage[2] += getAverage(m,"carbon");
-							gasAverage[3] += getAverage(m,"sulfur");
-							gasAverage[4] += getAverage(m,"fine_dust");
-							gasAverage[5] += getAverage(m,"ultrafine_dust");
+							getSeasonAverage[count] += getAverage(m,selectGas);
 						}
+						count++;
 						break;
 					case "여름":
 						//6,7,8월 평균을 가져온다
 						for(int m = 5; m < 8; m++) {
-							System.out.println((m+1)+"월 평균");
-							gasAverage[0] += getAverage(m,"nitrogen"); //인수: 가져올 월
-							gasAverage[1] += getAverage(m,"ozone");
-							gasAverage[2] += getAverage(m,"carbon");
-							gasAverage[3] += getAverage(m,"sulfur");
-							gasAverage[4] += getAverage(m,"fine_dust");
-							gasAverage[5] += getAverage(m,"ultrafine_dust");
+							getSeasonAverage[count] += getAverage(m,selectGas);
 						}
+						count++;
 						break;
 					case "가을":
 						//9,10,11월 평균을 가져온다
 						for(int m = 8; m < 11; m++) {
-							System.out.println((m+1)+"월 평균");
-							gasAverage[0] += getAverage(m,"nitrogen"); //인수: 가져올 월
-							gasAverage[1] += getAverage(m,"ozone");
-							gasAverage[2] += getAverage(m,"carbon");
-							gasAverage[3] += getAverage(m,"sulfur");
-							gasAverage[4] += getAverage(m,"fine_dust");
-							gasAverage[5] += getAverage(m,"ultrafine_dust");
+							getSeasonAverage[count] += getAverage(m,selectGas);
 						}
+						count++;
 						break;
 					case "겨울":
 						//12,1,2월 평균을 가져온다
-						for(int m = 11; m < 14; m++) {
-							if(m == 11) {
-								//m이 11인 경우 (12월)
-								System.out.println((m+1)+"월 평균");
-								gasAverage[0] += getAverage(m,"nitrogen"); //인수: 가져올 월
-								gasAverage[1] += getAverage(m,"ozone");
-								gasAverage[2] += getAverage(m,"carbon");
-								gasAverage[3] += getAverage(m,"sulfur");
-								gasAverage[4] += getAverage(m,"fine_dust");
-								gasAverage[5] += getAverage(m,"ultrafine_dust");
-							}else {
-								//m이 12,13인 경우 (1월 2월)
-								System.out.println((m-11)+"월 평균");
-								gasAverage[0] += getAverage(m-12,"nitrogen"); //인수: 가져올 월
-								gasAverage[1] += getAverage(m-12,"ozone");
-								gasAverage[2] += getAverage(m-12,"carbon");
-								gasAverage[3] += getAverage(m-12,"sulfur");
-								gasAverage[4] += getAverage(m-12,"fine_dust");
-								gasAverage[5] += getAverage(m-12,"ultrafine_dust");
-							}
-						}
+						getSeasonAverage[count] += getAverage(11,selectGas); //12월
+						getSeasonAverage[count] += getAverage(0,selectGas); //1월
+						getSeasonAverage[count] += getAverage(1,selectGas); //2월
+						
+						count++;
 						break;
-					default:
-							
+					default:		
 					}
-					total += 3;
+					
 				}
-				System.out.println("total: "+total);
-				//평균 계산
-				for(int i = 0; i < 6; i++) {
-					gasAverage[i] = Math.round((gasAverage[i]/total)*1000)/1000.0;
+				//계절 평균 계산
+				for(int i = 0; i < count; i++) {
+					getSeasonAverage[i] = Math.round((getSeasonAverage[i]/3)*1000)/1000.0;
 				}
-				//테이블 값 변경
-				for(int i = 0; i < 6; i++) {
-					table.setValueAt(Double.toString(gasAverage[i]), i, 1);
+				
+				//총 계절 평균 계산
+				double total = 0;
+				for(int i = 0; i < count; i++) {
+					total += getSeasonAverage[i];
+					System.out.println("각계절값: "+getSeasonAverage[i]);
 				}
+				getSeasonAverage[count] =  Math.round((total/size*1000))/1000.0;
+				System.out.println("총 평균: "+getSeasonAverage[count]);
+				
+				//테이블 값 설정
+				setTable(selectSeason,getSeasonAverage);
 			}
 		}
 	}
 	
+	private void setTable(ArrayList<String> selectSeason, double[] getSeasonAverage) {
+		int size = selectSeason.size();
+		Object[] temp = new Object[2];
+		int count = 0;
+		
+		//테이블 초기화
+		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
+		model.setNumRows(0);
+		
+		//테이블 값 변경
+		for(int i = 0; i < size+1; i++) {
+			if(i == size) {
+				temp[0] = "계절 전체 평균";
+			}else {
+				temp[0] = (selectSeason.get(i));
+			}
+			
+			temp[1] = getSeasonAverage[i];
+			
+			model = (DefaultTableModel) table.getModel();
+			model.addRow(temp);
+			count++;
+		}
+		
+		//선택한 계절이 4개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
+		if(count < 5) {
+			for(int i = 0; i < 5-count; i++) {
+				temp[0] = "";
+				temp[1] = "";
+				model = (DefaultTableModel) table.getModel();
+				model.addRow(temp);
+			}
+		}
+	}
 	private class RightListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showGraph) {
+				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
+				}else {
+					//계절별 그래프 x축 : 내가 선택한 각 계절 배열 (배열 마지막에는 "총 평균"이라는 스트링이 들어감)
+					//테이블 값을 가져온다.
+					
+					Object[] x;
+					Object[] data;
+					
 				}
-				System.out.println("막대그래프로 보기 클릭");
+				
 			}
 		}
 	}
 	
 }
-
-
-
-
-
-
-
 
 
 

@@ -61,7 +61,7 @@ public class Area extends JPanel {
 			"세곡",
 			"행주",
 			"시흥대로"};
-	private String Gas[]= {"이산화질소","오존","이산화탄소","아황산가스","미세먼지","초미세먼지"};
+	private String Gas[]= {"이산화질소","오존","일산화탄소","아황산가스","미세먼지","초미세먼지"};
 	private String Month[] = { "1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"};
 	private String Day31[] = { "1일","2일","3일","4일","5일","6일","7일","8일","9일","10일","11일","12일","13일","14일","15일","16일"
 			,"17일","18일","19일","20일","21일","22일","23일","24일","25일","26일","27일","28일","29일","30일","31일"};
@@ -233,7 +233,7 @@ public class Area extends JPanel {
 		scrollpane.setPreferredSize(new Dimension(400,135));
 		
 		//단위
-		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 이산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
+		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 일산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
 		unit.setHorizontalAlignment(JLabel.CENTER);
 		unit.setBackground(Color.white);
 		unit.setFont(small);
@@ -263,7 +263,7 @@ public class Area extends JPanel {
 		switch(korean) {
 		case "이산화질소":
 			return "nitrogen";
-		case "이산화탄소":
+		case "일산화탄소":
 			return "carbon";
 		case "오존":
 			return "ozone";
@@ -456,10 +456,14 @@ public class Area extends JPanel {
 	private class RightListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showGraph) {
+				System.out.println("막대그래프로 보기 클릭");	
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
+				}else {
+					//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지
+					//지역별 그래프 y축 : 기체 농도
 				}
-				System.out.println("막대그래프로 보기 클릭");	
+				
 			}
 		}
 	}

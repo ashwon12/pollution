@@ -28,7 +28,7 @@ public class Gas extends JPanel {
 	
 	private JTable table;
 	private DefaultTableModel model;
-	private String title[] = {"날짜","지역","농도","아이콘","경보알림"};
+	private String title[] = {"날짜","지역","농도","범위","아이콘"};
 	private JScrollPane scrollpane;
 	
 	private JLabel unit;
@@ -38,6 +38,12 @@ public class Gas extends JPanel {
 	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
 	private Font middle = new Font("맑은 고딕", Font.PLAIN, 17);
 	private Font small = new Font("맑은 고딕", Font.BOLD, 13);
+	
+	//아이콘 추가
+	private Icon i1 = new ImageIcon("./images/1.png");//좋음
+	private Icon i2 = new ImageIcon("./images/2.png");//보통
+	private Icon i3 = new ImageIcon("./images/3.png");//나쁨
+	private Icon i4 = new ImageIcon("./images/4.png");//매우나쁨
 	
 	public Gas() {
 		this.setLayout(new GridLayout(1,2));
@@ -73,7 +79,7 @@ public class Gas extends JPanel {
         
         button_gas[0] = new JRadioButton("이산화질소");
         button_gas[0].setHorizontalAlignment(JRadioButton.LEFT);
-		button_gas[1] = new JRadioButton("이산화탄소");
+		button_gas[1] = new JRadioButton("일산화탄소");
 		button_gas[2] = new JRadioButton("아황산가스");
 		button_gas[3] = new JRadioButton("미세먼지");
 		button_gas[4] = new JRadioButton("초미세먼지");
@@ -87,7 +93,7 @@ public class Gas extends JPanel {
 		}
 	
 		//버튼
-		showResult = new JButton("결과 보기 ");
+		showResult = new JButton("결과 보기");
 		showResult.setFont(middle);
 		showResult.setBackground(new Color(242,242,242));
             
@@ -139,18 +145,22 @@ public class Gas extends JPanel {
 		resultText.setFont(middle);
 		
 		//테이블
-		model = new DefaultTableModel(title,0);
+		model =  new DefaultTableModel(null, title) {
+			public Class getColumnClass(int column) {
+				return getValueAt(0, column).getClass();
+			}
+		};
 		table = new JTable(model);
 		for(int i = 0; i < 25; i++) {
 			model = (DefaultTableModel) table.getModel();
 			model.addRow(new String[]{"","","","",""});
 		}
-		table.setRowHeight(25);
+		table.setRowHeight(28);
 		scrollpane = new JScrollPane(table);
 		scrollpane.setPreferredSize(new Dimension(400,150));
 		
 		//단위
-		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 이산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
+		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 일산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
 		unit.setHorizontalAlignment(JLabel.CENTER);
 		unit.setBackground(Color.white);
 		unit.setFont(small);
@@ -181,7 +191,7 @@ public class Gas extends JPanel {
 		switch(korean) {
 		case "이산화질소":
 			return "nitrogen";
-		case "이산화탄소":
+		case "일산화탄소":
 			return "carbon";
 		case "오존":
 			return "ozone";
@@ -198,13 +208,13 @@ public class Gas extends JPanel {
 	private void setTable(String selectGas) {
 		
 		try {
-			System.out.println("선택 기체: "+selectGas);
+			System.out.println("선택 오염물질: "+selectGas);
 			conn = DB.makeConnection();
 			
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT date, area, "+selectGas);
 			sql.append(" FROM degree ORDER BY CAST("+selectGas);
-			sql.append(" as DOUBLE) DESC LIMIT 100");
+			sql.append(" as DOUBLE) DESC LIMIT 500");
 			
 			ResultSet rs;
 			PreparedStatement pstmt = conn.prepareStatement(sql.toString());
@@ -213,9 +223,7 @@ public class Gas extends JPanel {
 			rs = pstmt.executeQuery();
 			rs.beforeFirst();
 			
-			/*
-			 *	private String title[] = {"날짜","지역","농도","아이콘","경보알림"};
-			*/
+			
 			//테이블 값 설정
 			
 			model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
@@ -226,8 +234,11 @@ public class Gas extends JPanel {
 				temp[0] = rs.getString("date");
 				temp[1] = rs.getString("area");
 				temp[2] = rs.getString(selectGas);
-				temp[3] = "아이콘 들어갈거양";
-				temp[4] = "경보들어갈거양";
+				
+				Object[] t = setData(temp[2],selectGas);
+				//오염물질 종류와 값을 판단해 텍스트와 아이콘을 설정해준다.
+				temp[3] = t[0];
+				temp[4] = t[1];
 				
 				model = (DefaultTableModel) table.getModel();
 				model.addRow(temp);
@@ -239,7 +250,135 @@ public class Gas extends JPanel {
 			System.out.println("오류:"+e);
 		}
 	}
-	
+	//기체 종류와 값을 판단해 아이콘을 설정해준다.
+	private Object[] setData(Object t_data,String selectGas) {
+		double data = Double.parseDouble((String)t_data);
+		Object[] r = new Object[2];
+		switch(selectGas) {
+		case "nitrogen":
+			if(data <= 0.030) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 0.60) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 0.200) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 0.200) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		case "carbon":
+			if(data <= 2.0) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 9.0) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 15.0) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 15.0) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		case "ozone":
+			if(data <= 0.030) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 0.090) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 0.150) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 0.150) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		case "sulfur":
+			if(data <= 0.020) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 0.050) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 0.150) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 0.150) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		case "fine_dust":
+			if(data <= 30) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 80) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 150) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 150) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		case "ultrafine_dust":
+			if(data <= 15) {
+				r[0] = "좋음";
+				r[1] = i1;
+				return r;
+			}else if(data <= 35) {
+				r[0] = "보통";
+				r[1] = i2;
+				return r;
+			}else if(data <= 75) {
+				r[0] = "나쁨";
+				r[1] = i3;
+				return r;
+			}else if(data > 75) {
+				r[0] = "매우나쁨";
+				r[1] = i4;
+				return r;
+			}else {
+				return null;
+			}
+		default:
+			return null;
+		}
+	}
 	private class LeftListener implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -260,7 +399,7 @@ public class Gas extends JPanel {
 						select = true;
 					}
 				}
-				temp += " 농도의 내림차순 정렬 상위 100개 입니다.</html>";
+				temp += " 농도의 내림차순 정렬 상위 500개 입니다.</html>";
 				
 				//선택한 버튼이 없을 경우 리턴시킨다.
 				if(!select) {
@@ -278,10 +417,13 @@ public class Gas extends JPanel {
 	private class RightListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showGraph) {
+				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
+				}else {
+					//기체별 그래프 x축 : 25개 날짜와 그에 해당하는 지역 이름
 				}
-				System.out.println("막대그래프로 보기 클릭");
+				
 			}
 		}
 	}

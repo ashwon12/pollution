@@ -1,6 +1,8 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -9,24 +11,20 @@ public class Month extends Average{
 	private JPanel left, right; //왼쪽 : 선택, 오른쪽 : 결과
 
 	//왼쪽 패널 구성 요소
-	private JPanel p1,p2,p3;
-	private JLabel label1;//달을 선택하라는 안내 라벨
+	private JPanel p1,p2,p3,p4;
+	private JLabel label1,label2;//달을 선택하라는 안내 라벨
 	private JCheckBox[] months = new JCheckBox[12];//체크박스들
+	private JComboBox<String> gasCombo;
+	private String Gas[]= {"이산화질소","오존","일산화탄소","아황산가스","미세먼지","초미세먼지"};
 	private JButton result;//결과 보기 버튼
+	
 	
 	//오른쪽 패널 구성 요소
 	private JPanel North,Center,South;
-	private JLabel label2;//어떤 달을 선택했는지 알려주는 라벨
+	private JLabel label3;//어떤 달을 선택했는지 알려주는 라벨
 	private JTable table;
-	private String header[] = {"오염물질","평균"};
-	private String contents[][] = {
-			{"이산화질소",""},
-			{"오존 ",""},
-			{"이산화탄소",""},
-			{"아황산가스",""},
-			{"미세먼지",""},
-			{"초미세먼지",""}
-			};
+	private String title[] = {"월","농도"};
+	private DefaultTableModel model;
 	private JScrollPane scrollpane;
 	
 	private JLabel unit;
@@ -46,18 +44,25 @@ public class Month extends Average{
 	private void setLeft() {
 		
 		//레이아웃 나누기
-		left = new JPanel(new GridLayout(3,1));
+		left = new JPanel(new GridLayout(4,1));
 		p1 = new JPanel(); 
-		p2 = new JPanel(new GridLayout(3,4));
-		p3 = new JPanel();
-		
+		p2 = new JPanel(new GridLayout(2,6));
+		p3 = new JPanel(new FlowLayout (FlowLayout.CENTER,30,60));
+		p4 = new JPanel(new FlowLayout (FlowLayout.CENTER,0,50));
+
+	
 		//배경색 설정
 		p1.setBackground(new Color(250,250,250));
-		p3.setBackground(new Color(250,250,250));
+		p2.setBackground(new Color(250,250,250));
+	    p3.setBackground(new Color(250,250,250));
+	    p4.setBackground(new Color(250,250,250));
+
 		
 		//레이블 작성
-		label1 = new JLabel("<html><br><br><center>선택한 월에 대한 <br> 기체 농도 평균 조회입니다");
+		label1 = new JLabel("<html><br><br><center>선택한 월에 대한 <br> 선택한 오염물질 농도 평균 조회입니다");
+		label2 = new JLabel("오염물질 선택 :");
 		label1.setFont(Big);
+		label2.setFont(middle);
 		
 		//체크박스 설정
 		for(int i = 0; i < 12; i++) {
@@ -67,6 +72,10 @@ public class Month extends Average{
 			months[i].setHorizontalAlignment(JCheckBox.CENTER);
 			p2.add(months[i]);
 		}
+		
+		//콤보박스
+	    gasCombo = new JComboBox<String>(Gas);
+	    gasCombo.setBackground(Color.white);
 		
 		//버튼
 		result = new JButton("결과보기");
@@ -79,12 +88,16 @@ public class Month extends Average{
 		
 		//패널에 추가
 		p1.add(label1);
-        p3.add(result);
+		p3.add(label2);
+        p3.add(gasCombo);
+        p4.add(result);
+
         
         left.add(p1);
         left.add(p2);
         left.add(p3);
-		
+        left.add(p4);
+
 		add(left);
 	}
 	
@@ -101,16 +114,21 @@ public class Month extends Average{
 		South.setBackground(Color.white);
 		
 		//라벨은 액션리스너에서 바꿔준다.
-		label2 = new JLabel("<html><br><br><br>선택한 결과 입니다.");
-		label2.setFont(middle);
+		label3 = new JLabel("<html><br><br><br>선택한 결과 입니다.");
+		label3.setFont(middle);
 		
 		//테이블
-		table = new JTable(contents, header); //contents에서 내용을 가지고 있으면 된다.
+		model = new DefaultTableModel(title,0);
+		table = new JTable(model); 
+		for(int i = 0; i < 7; i++) {
+			model = (DefaultTableModel) table.getModel();
+			model.addRow(new String[]{""});
+		}
 		scrollpane = new JScrollPane(table);
-		scrollpane.setPreferredSize(new Dimension(400,119));
+		scrollpane.setPreferredSize(new Dimension(400,135));
 		
 		//단위
-		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 이산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
+		unit = new JLabel("<html><center>-단위-</center><br>이산화질소, 오존, 일산화탄소, 아황산가스 : ppm<br>미세먼지, 초미세먼지 : (㎍/㎥)<br><br><br></html>");
 		unit.setHorizontalAlignment(JLabel.CENTER);
 		unit.setBackground(Color.white);
 		unit.setFont(small);
@@ -124,7 +142,7 @@ public class Month extends Average{
 		RightListener Listener = new RightListener();
 		show_graph.addActionListener(Listener);
 		
-		North.add(label2);
+		North.add(label3);
 		Center.add(scrollpane);
 		South.add(show_graph);
 		right.add(North);
@@ -135,7 +153,24 @@ public class Month extends Average{
 		add(right);
 	}
 
-	
+	private String changeEnglish(String korean) {
+		switch(korean) {
+		case "이산화질소":
+			return "nitrogen";
+		case "일산화탄소":
+			return "carbon";
+		case "오존":
+			return "ozone";
+		case "아황산가스":
+			return "sulfur";
+		case "미세먼지":
+			return "fine_dust";
+		case "초미세먼지":
+			return "ultrafine_dust";
+		default:
+			return null;
+		}
+	}
 	private class LeftListener implements ActionListener{
 		
 		@Override
@@ -147,12 +182,13 @@ public class Month extends Average{
 				String temp = "<html><br><br>다음은<br> ";
 				boolean first = false;
 				ArrayList<Integer> selectMonth = new ArrayList<Integer>(); //몇월을 선택했는지 알아야한다. ->arrayList
-				
+				String selectGas = ""; //선택한 기체
+					
 				for(int i = 0; i < 12; i++) {
 					if(months[i].isSelected()) {
 						if(!first) { //첫번째 선택 인 경우
 							temp += months[i].getText();
-							selectMonth.add(i); //i+1 월 추가
+							selectMonth.add(i); //"i+1"월 추가
 							first = true;
 						}else {
 							temp +=", "+months[i].getText();
@@ -162,7 +198,10 @@ public class Month extends Average{
 						continue;
 					}
 				}
-				temp+="의 <br>평균 농도입니다.<br><br></html>";
+				//내가 선택한 오염물질 종류를 알아야한다.
+				selectGas = changeEnglish((String)gasCombo.getSelectedItem());
+				temp+="<br>"+(String)gasCombo.getSelectedItem();
+				temp+="의 평균 농도입니다.<br><br></html>";
 				
 				//아무 월도 선택하지 않은 경우
 				if(selectMonth.size()==0) {
@@ -170,55 +209,78 @@ public class Month extends Average{
 					return;
 				}
 				
-				label2.setText(temp);
+				label3.setText(temp);
 				
-				//db
-				double[] gasAverage = new double[6];
-				/* 
-				 * 이산화질소 0
-				 * 오존 1
-				 * 이산화탄소 2
-				 * 아황산가스 3
-				 * 미세먼지 4
-				 * 초미세먼지 5
-				 */
-				//초기화
-				for(int i = 0; i < 6; i++) {
-					gasAverage[i] = 0;
-				}
-				int total = 0;
-				
+				//가져와야 하는 것 : 선택한 기체에 대한 각 월 평균 =>여길 통해서 전체 월 평균도 구해준다.
+				int size = selectMonth.size();
+				double[] getMonthAverage = new double[size+1]; //마지막에는 월 총 평균을 넣어준다.
+
+				int count = 0;
 				for(int m: selectMonth) {
-					gasAverage[0] += getAverage(m,"nitrogen"); //인수: 가져올 월
-					gasAverage[1] += getAverage(m,"ozone");
-					gasAverage[2] += getAverage(m,"carbon");
-					gasAverage[3] += getAverage(m,"sulfur");
-					gasAverage[4] += getAverage(m,"fine_dust");
-					gasAverage[5] += getAverage(m,"ultrafine_dust");
-					
-					total++;
+					getMonthAverage[count] = getAverage(m,selectGas); //인수: 가져올 월
+					count++;
 				}
-				//평균 계산
-				for(int i = 0; i < 6; i++) {
-					gasAverage[i] = Math.round((gasAverage[i]/total)*1000)/1000.0;
+				
+				//월 총 평균을 넣어준다
+				double total = 0;
+				for(int i = 0; i < size; i++) {
+					total += getMonthAverage[i];
 				}
-				//테이블 값 변경
-				for(int i = 0; i < 6; i++) {
-					table.setValueAt(Double.toString(gasAverage[i]), i, 1);
-				}
+				//System.out.println("total : "+total+"  size:"+size);
+				getMonthAverage[size] = Math.round((total/size)*1000)/1000.0;
+				
+				//테이블값 설정
+				setTable(selectMonth,getMonthAverage);
+				
 			}
 		}
 	}
-
+	private void setTable(ArrayList<Integer> selectMonth,double[] getMonthAverage) {
+		int size = selectMonth.size();
+		Object[] temp = new Object[2];
+		int count = 0;
+		
+		//테이블 초기화
+		model = (DefaultTableModel) table.getModel(); //테이블 설정 전에 초기화시키기
+		model.setNumRows(0);
+		
+		//테이블 값 변경
+		for(int i = 0; i < size+1; i++) {
+			if(i == size) {
+				temp[0] = "월 전체 평균";
+			}else {
+				temp[0] = (selectMonth.get(i)+1) + "월";
+			}
+			
+			temp[1] = getMonthAverage[i];
+			
+			model = (DefaultTableModel) table.getModel();
+			model.addRow(temp);
+			count++;
+		}
+		
+		
+		//선택한 달이 6개 미만인 경우 밑의 테이블에 빈 값을 넣어준다.
+		if(count < 7) {
+			for(int i = 0; i < 7-count; i++) {
+				temp[0] = "";
+				temp[1] = "";
+				model = (DefaultTableModel) table.getModel();
+				model.addRow(temp);
+			}
+		}
+	}
 	
 	private class RightListener implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == show_graph) {
+				System.out.println("막대그래프로 보기 클릭");
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
+				}else {
+					//월별 그래프 x축 : 내가 선택한 각 월 배열 (배열 마지막에는 "총 평균"이라는 스트링이 들어감)
 				}
-				System.out.println("막대그래프로 보기 클릭");
 			}
 		}
 	}

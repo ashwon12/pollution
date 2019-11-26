@@ -50,7 +50,7 @@ public class Quiz extends JPanel{
 	    f1 = new Font("돋움", Font.PLAIN, 20);
 	    quizlabel.setFont(f1);
 	    panel_QUIZ = new JPanel(); //패널객체생성
-	    panel_QUIZ.add(quizlabel); //페널에 퀴즈 문제 추가
+	    panel_QUIZ.add(quizlabel,BorderLayout.NORTH); //페널에 퀴즈 문제 추가
 	    panel_QUIZ.setBackground(Color.white);
 	   
 	    //O, X 버튼
@@ -76,6 +76,7 @@ public class Quiz extends JPanel{
 	    Center.add(panel_OX);
 	   
 	    add(Center, BorderLayout.CENTER);
+	   
 	}
 
 	private class ButtonListener implements ActionListener{
