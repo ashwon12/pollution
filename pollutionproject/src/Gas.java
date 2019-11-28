@@ -232,7 +232,7 @@ public class Gas extends JPanel {
 			model.setNumRows(0);
 			
 			Object temp[] = new Object[5];
-			while(rs.next()) { //상위 25개
+			while(rs.next()) { //상위 20개
 				temp[0] = rs.getString("date");
 				temp[1] = rs.getString("area");
 				temp[2] = rs.getString(selectGas);
@@ -359,7 +359,7 @@ public class Gas extends JPanel {
 						select = true;
 					}
 				}
-				temp += " 농도의 내림차순 정렬 상위 500개 입니다.</html>";
+				temp += " 농도의 내림차순 정렬 상위 500개 입니다. 그래프는 상위 20개까지 볼 수 있습니다.</html>";
 				
 				//선택한 버튼이 없을 경우 리턴시킨다.
 				if(!select) {
@@ -378,8 +378,10 @@ public class Gas extends JPanel {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
 					//기체별 그래프 x축 : 25개 날짜와 그에 해당하는 지역 이름
-					String[] x = new String[25];
+					String[] date = new String[25];
+					String[] area = new String[25];
 					String[] data = new String[25];
+					String[] val = new String[25];
 					
 					//x축 가져오기(날짜 + 지역이름)
 					/* 스트링 형태 : 
@@ -387,13 +389,19 @@ public class Gas extends JPanel {
 					 * 세곡
 					 */
 					for(int i = 0; i < 25; i++) {
-						x[i] = (String)table.getValueAt(i, 0);
-						x[i] += "\n"+(String)table.getValueAt(i, 1);
+						date[i] = (String)table.getValueAt(i, 0);
+						area[i] = (String)table.getValueAt(i, 1);
 					}
 					
+					
 					//데이터 가져오기
+					
 					for(int i = 0; i < 25; i++) {
 						data[i] = (String)table.getValueAt(i, 2);
+					}
+					
+					for(int i = 0; i < 25; i++) {
+						val[i] = (String)table.getValueAt(i, 3);
 					}
 					
 					/*
@@ -405,9 +413,8 @@ public class Gas extends JPanel {
 					 * 미세먼지	: fine_dust
 					 * 초미세먼지	: ultrafine_dust
 					 * */
-					//gasGraph = new gasGraph(x,data,myGas);
-					//gasGraph.setVisible(true);
-				
+					gasGraph = new GasGraph(date,area,data,val,myGas);
+					gasGraph.setVisible(true);
 				}
 			}
 		}
