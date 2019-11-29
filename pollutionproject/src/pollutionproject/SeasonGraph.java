@@ -37,7 +37,7 @@ public class SeasonGraph extends JFrame {
 		this.data =data;
 		this.myGas = myGas;
 		
-		this.setTitle("계절별"+ myGas+ "평균 조회 그래프");
+		this.setTitle("계절별"+ this.myGas+ "평균 조회 그래프");
 		this.setSize(700,600);
 		this.setLocation(500,200); 
 		
@@ -88,12 +88,7 @@ public class SeasonGraph extends JFrame {
 			}
 
 			//간격
-			if(myGas == "sulfur") {
-				yVal = Math.round(((max-min)/10)*10000) / 10000.0;
-			}
-			else {
-				yVal = Math.round(((max-min)/10)*1000) / 1000.0;
-			}
+			yVal = Math.round(((max-min)/10)*10000) / 10000.0;
 			xVal = (500/data.length+1);
 			
 			//y축 그리기 
@@ -103,25 +98,15 @@ public class SeasonGraph extends JFrame {
                g.drawLine(100, cnt, 600, cnt);
                g.setColor(new Color(0,0,0));
                
-               if( myGas == "sulfur") {
-            	   if(max == min) {
-            		   temp = Math.round((max-(a*0.0001))*10000) / 10000.0; 
-            	   }
-            	   else {
-            		   temp = Math.round((max-(a*yVal))*10000) / 10000.0; 
-            	   }
+               if(max == min) {
+            	   temp = Math.round((max-(a*0.0001))*10000) / 10000.0; 
+               }else{
+            	   temp = Math.round((max-(a*yVal))*10000) / 10000.0; 
                }
-               else {
-            	   if(max == min) {
-            		   temp = Math.round((max-(a*0.001))*1000) / 1000.0; 
-            	   }
-            	   else{
-            		   temp = Math.round((max-(a*yVal))*1000) / 1000.0; 
-            	   }
-               }
+               
                range[a] = temp;
                yIndex = Double.toString(temp);   
-               g.drawString(yIndex, 60, cnt+5);    // yIndex을  (60,cnt+5) 좌표에 그리기
+               g.drawString(yIndex, 55, cnt+5);    // yIndex을  (55,cnt+5) 좌표에 그리기
                a++;
             }
             

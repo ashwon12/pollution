@@ -456,36 +456,38 @@ public class Area extends JPanel {
 				myGas = selectGas;
 			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");	
-				if(table.getValueAt(0, 1) == "") {
-					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
-				}else {
-					//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지(무조건 7개)
-					//지역별 그래프 y축 : 기체 농도
-					
-					String[] x = new String[7];
-					String[] data = new String[7];
-					
-					//x축 가져오기
-					for(int i = 0; i < 7; i++) {
-						x[i] = (String)table.getValueAt(i, 0);
+				
+				
+				boolean isEmpty = false;
+				for(int i = 0; i < 7; i++) {
+					if(table.getValueAt(i, 1) == "") {
+						if(i == 6) {
+							//모든 데이터가 없을 경우
+							JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
+							isEmpty = true;
+						}
+					}else {
+						break;
 					}
-					
-					//데이터 가져오기
-					for(int i = 0; i < 7; i++) {
-						data[i] = (String)table.getValueAt(i, 1);
-					}
-					
-					/*
-					 * myGas =>데이터베이서 열 이름과 같게 설정
-					 * 이산화질소	: nitrogen
-					 * 일산화탄소	: carbon
-					 * 오존		: ozone
-					 * 아황산가스	: sulfur
-					 * 미세먼지	: fine_dust
-					 * 초미세먼지	: ultrafine_dust
-					 * */
+				}
 					
 					
+				//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지(무조건 7개)
+				//지역별 그래프 y축 : 기체 농도
+				
+				String[] x = new String[7];
+				String[] data = new String[7];
+				
+				//x축 가져오기
+				for(int i = 0; i < 7; i++) {
+					x[i] = (String)table.getValueAt(i, 0);
+				}
+				
+				//데이터 가져오기
+				for(int i = 0; i < 7; i++) {
+					data[i] = (String)table.getValueAt(i, 1);
+				}
+				if(!isEmpty) {
 					areaGraph = new areaGraph(x,data,myGas);
 					areaGraph.setVisible(true);
 				}

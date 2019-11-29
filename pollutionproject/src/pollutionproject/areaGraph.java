@@ -37,7 +37,7 @@ import java.awt.*;
 			this.data= data;
 			this.myGas = myGas;
 			
-			this.setTitle("지역별"+""+ myGas+""+ "평균 조회 그래프");
+			this.setTitle("지역별"+""+ this.myGas+""+ "평균 조회 그래프");
 			this.setSize(900,600);
 			this.setLocation(500,200); 
 			
@@ -109,9 +109,8 @@ import java.awt.*;
 			System.out.println("min: "+min);
 
         	//간격
-			double val = Math.round(((max-min)/15)*1000) / 1000.0;
-			
-			
+			double val = Math.round(((max-min)/15)*10000) / 10000.0;
+			 
 			//y축
 			int a = 0;
             for(int cnt=80; cnt<400; cnt=cnt+20) {
@@ -119,7 +118,13 @@ import java.awt.*;
                g.drawLine(100, cnt, 800, cnt);
                g.setColor(new Color(0,0,0));
                
-               Double temp = Math.round((max-(a*val))*1000) / 1000.0;
+               Double temp;
+               
+               if(max == min) {
+            	   temp = Math.round((max-(a*0.0001))*10000) / 10000.0;
+               }else {
+            	   temp = Math.round((max-(a*val))*10000) / 10000.0;
+               }
                range[a] = temp;
                //System.out.println("y축은 : "+range[a]);
                yIndex = Double.toString(temp);  
