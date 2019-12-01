@@ -1,10 +1,15 @@
 package pollutionproject;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -27,9 +32,9 @@ public class Gas extends JPanel {
 	private JPanel North,Center,South;
 	private JLabel resultText;
 	
-	private JTable table;
+	private static JTable table;
 	private DefaultTableModel model;
-	private String title[] = {"날짜","지역","농도","범위","아이콘"};
+	private String title[] = {"날짜","지역","농도","상태","아이콘"};
 	private JScrollPane scrollpane;
 	
 	private JLabel unit;
@@ -49,14 +54,15 @@ public class Gas extends JPanel {
 	
 	//리스너 추가
 	Listener Listener = new Listener();
+	private static String myGas;
+	private static String gasKor;
 	
 	public Gas() {
 		this.setLayout(new GridLayout(1,2));
 		Left();
 		Right();	
 	}
-	
-	
+		
 	private void Left() {
         
 		//레이아웃 나누기
@@ -237,7 +243,9 @@ public class Gas extends JPanel {
 				temp[0] = rs.getString("date");
 				temp[1] = rs.getString("area");
 				temp[2] = rs.getString(selectGas);
-				
+				if(selectGas == "ultrafine_dust") {
+					temp[2] = rs.getString(selectGas).replaceAll("[^0-9]","");
+				}
 				Object[] t = setData(temp[2],selectGas);
 				//오염물질 종류와 값을 판단해 텍스트와 아이콘을 설정해준다.
 				temp[3] = t[0];
@@ -340,7 +348,6 @@ public class Gas extends JPanel {
 		}
 	}
 	private class Listener implements ActionListener{
-		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
@@ -350,17 +357,19 @@ public class Gas extends JPanel {
 				/*
 				 * 기체 : string 라디오버튼으로 하나만 존재
 				 */
-				String selectGas ="";
+				String selectGas = null;
 				String temp = "<html><br><br><br>다음은 ";
 				boolean select = false;
 				for(int i = 0; i < 6; i++) {
 					if(button_gas[i].isSelected()) {
-						selectGas += changeEnglish(button_gas[i].getText());
+						gasKor = button_gas[i].getText();
+						selectGas = changeEnglish(button_gas[i].getText());
 						temp += button_gas[i].getText();
 						select = true;
+						break;
 					}
 				}
-				temp += " 농도의 내림차순 정렬 상위 500개 입니다. 그래프는 상위 20개까지 볼 수 있습니다.</html>";
+				temp += " 농도의 내림차순 정렬 상위 500개 입니다. <br>그래프는 상위 20개까지 볼 수 있습니다.</html>";
 				
 				//선택한 버튼이 없을 경우 리턴시킨다.
 				if(!select) {
@@ -378,7 +387,7 @@ public class Gas extends JPanel {
 				if(table.getValueAt(0, 1) == "") {
 					JOptionPane.showMessageDialog(null,"조회 할 데이터가 없습니다!");
 				}else {
-					//기체별 그래프 x축 : 25개 날짜와 그에 해당하는 지역 이름
+					//기체별 그래프 x축 : 20개 날짜와 그에 해당하는 지역 이름
 					String[] date = new String[25];
 					String[] area = new String[25];
 					String[] data = new String[25];
@@ -394,9 +403,7 @@ public class Gas extends JPanel {
 						area[i] = (String)table.getValueAt(i, 1);
 					}
 					
-					
 					//데이터 가져오기
-					
 					for(int i = 0; i < 25; i++) {
 						data[i] = (String)table.getValueAt(i, 2);
 					}
@@ -418,6 +425,91 @@ public class Gas extends JPanel {
 					gasGraph.setVisible(true);
 				}
 			}
+		}
+	}
+	//저장버튼 리스너 만들기
+	public static ActionListener gasSave = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			System.out.println("오염물질의 저장");
+			
+			if(table.getValueAt(0, 1) == "") {
+				JOptionPane.showMessageDialog(null,"저장 할 데이터가 없습니다!");
+				return;
+			}
+			
+			
+			File savefile;
+			String savepathname;
+			
+			//파일 경로 선택
+			JFileChooser chooser = new JFileChooser();// 객체 생성
+			chooser.setCurrentDirectory(new File("C:\\")); // 맨처음경로를 C로 함
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 디렉토리만 선택가능
+			
+			int re = chooser.showSaveDialog(null);
+			
+			if (re == JFileChooser.APPROVE_OPTION) { //디렉토리를 선택했으면
+				savefile = chooser.getSelectedFile(); //선택된 디렉토리 저장하고
+				savepathname = savefile.getAbsolutePath();  //디렉토리결과+파일이름
+				System.out.println(savepathname);
+			}else{
+				JOptionPane.showMessageDialog(null, "경로를 선택하지않았습니다.","경고", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			ArrayList<String> list = new ArrayList<String>();
+			//내용 저장
+			//데이터 값 가져오기
+			//날짜  지역   선택기체   범위
+			for(int i = 0; i < 500; i++) {
+				list.add((String)table.getValueAt(i,0));
+				list.add((String)table.getValueAt(i,1));
+				list.add((String)table.getValueAt(i,2));
+				list.add((String)table.getValueAt(i,3));
+			}
+			
+			//파일 작성
+			try {
+
+				BufferedWriter fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
+				//첫줄 작성
+				//날짜  지역   선택기체   범위
+				fw.write("날짜"+","); fw.write("지역"+","); fw.write(addUnit(gasKor)+","); fw.write("상태"); fw.newLine();
+				
+				//여긴 총 4열짜리
+				int count = 0;
+				for(String dom : list) {
+					if(count == 3) {
+						//3열이 채워지면 4열이 들어갈거임 쉼표 없이
+						fw.write(dom);
+						//이제 다 채워졌으니 새로운 열로 넘어가야함
+						fw.newLine();
+						//이제 count를 초기화 시켜줌으로써 여기 이프문에 안들어오고 밑에껄로 들어가게함
+						count = 0;
+					}else {
+						fw.write(dom+","); //첫 열, 두번째 열, 세번째열 추가
+						count++; //1과 2,3 을 거쳐서 카운트 3다음엔 4열이 들어가게 될거임
+					}
+				}
+				
+				fw.flush();
+				fw.close();
+			}catch(Exception e) {
+				e.printStackTrace();	
+			}
+		}
+	};
+	
+	private static String addUnit(String kor) {
+		switch(kor) {
+		case "이산화질소": case "아황산가스": case "일산화탄소": case "오존":
+			return kor+" (ppm)";
+		case "미세먼지": case "초미세먼지":
+			return kor+" (㎍/㎥)";
+			default:
+				return null;
 		}
 	}
 }

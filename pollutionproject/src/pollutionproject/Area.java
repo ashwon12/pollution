@@ -1,5 +1,9 @@
 package pollutionproject;
 import java.awt.event.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,7 +81,7 @@ public class Area extends JPanel {
 	private JPanel North,Center,South;
 	private JLabel result;
 	
-	private JTable table;
+	private static JTable table;
 	private DefaultTableModel model;
 	private String title[] = {"날짜","농도"};
 	private JScrollPane scrollpane;
@@ -93,6 +97,9 @@ public class Area extends JPanel {
 	
 	//리스너
 	Listener Listener = new Listener();
+	private static String myGas;
+	private static String gasKor;
+	private static String myArea;
 	
 	public Area() {
 		
@@ -208,7 +215,6 @@ public class Area extends JPanel {
 		
 		add(left);
 	}
-
 	private void Right() {
 		
 		right = new JPanel(new GridLayout(4,1));
@@ -359,16 +365,13 @@ public class Area extends JPanel {
 				default:
 					date[1] = "0"+date[1];
 			}
-			//System.out.println(date[1]);
 			switch(date[2]) { //일
 			case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":
 				date[2] = "0"+date[2];
 				break;
 				default:
 			}
-			//System.out.println(date[2]);
 			String calstart = date[0]+"-"+date[1]+"-"+date[2];
-			//System.out.println(calstart);
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 			try {
 				Date start = format.parse(calstart);
@@ -380,12 +383,15 @@ public class Area extends JPanel {
 				//캘린더 포맷을 설정하고 캘린더를 이용해 일주일 날짜를 먼저 입력한다.
 				temp[0] = format.format(cal.getTime()); //set
 				temp[1] = rs.getString(pollution);
-				
+				if(pollution == "ultrafine_dust") {
+					temp[1] = rs.getString(pollution).replaceAll("[^0-9]","");
+				}
+				System.out.println(temp[1]);
 				pstmt = conn.prepareStatement(sql2.toString());
 				pstmt.setString(1,area);
 				pstmt.setString(2,temp[0]);
 				ResultSet rs2 = pstmt.executeQuery();
-				if(!rs2.isBeforeFirst()) { //날짜가 존재하지 않아 아예 일거오지 않은 시작, 중간 부분들
+				if(!rs2.isBeforeFirst()) { //날짜가 존재하지 않아 아예 읽오지 않은 시작, 중간 부분들
 					temp[1] = "";
 					rs.previous();
 				}
@@ -419,7 +425,6 @@ public class Area extends JPanel {
 	
 	}
 	private class Listener implements ActionListener{
-		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showResult) { //결과보기 버튼을 눌렀을 경우
@@ -445,6 +450,7 @@ public class Area extends JPanel {
 				result.setText(temp);
 				
 				//데이터베이스의 열 이름과 같게 만들어준다.
+				gasKor = selectGas;
 				selectGas = changeEnglish(selectGas);
 				
 				//시작날짜와 끝 날짜를 구한다.
@@ -454,6 +460,7 @@ public class Area extends JPanel {
 				setTable(selectArea,selectGas,startDate,endDate);
 				
 				myGas = selectGas;
+				myArea = selectArea;
 			}else if(e.getSource() == showGraph) {
 				System.out.println("막대그래프로 보기 클릭");	
 				
@@ -470,8 +477,7 @@ public class Area extends JPanel {
 						break;
 					}
 				}
-					
-					
+	
 				//지역별 그래프 x축 : 시작날짜와 그 뒤 일주일까지(무조건 7개)
 				//지역별 그래프 y축 : 기체 농도
 				
@@ -487,6 +493,9 @@ public class Area extends JPanel {
 				for(int i = 0; i < 7; i++) {
 					data[i] = (String)table.getValueAt(i, 1);
 				}
+				for(int i = 0; i < 7; i++) {
+					System.out.println(x[i]+"     "+data[i]);
+				}
 				if(!isEmpty) {
 					areaGraph = new areaGraph(x,data,myGas);
 					areaGraph.setVisible(true);
@@ -494,4 +503,93 @@ public class Area extends JPanel {
 			}
 		}
 	}
+	//저장버튼 리스너 만들기
+	public static ActionListener areaSave = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			System.out.println("지역의 저장");
+			
+			for(int i = 0; i < 7; i++) {
+				if(table.getValueAt(i, 1) == "") {
+					if(i == 6) {
+						//모든 데이터가 없을 경우
+						JOptionPane.showMessageDialog(null,"저장 할 데이터가 없습니다!");
+						return;
+					}
+				}else {
+					break;
+				}
+			}
+			
+			//날짜			지역   	이산화질소
+			//2019-11-11	강남구	0.033
+			//2019-11-12	강남구	0.039
+			File savefile;
+			String savepathname;
+			
+			//파일 경로 선택
+			JFileChooser chooser = new JFileChooser();// 객체 생성
+			chooser.setCurrentDirectory(new File("C:\\")); // 맨처음경로를 C로 함
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 디렉토리만 선택가능
+			
+			int re = chooser.showSaveDialog(null);
+			
+			if (re == JFileChooser.APPROVE_OPTION) { //디렉토리를 선택했으면
+				savefile = chooser.getSelectedFile(); //선택된 디렉토리 저장하고
+				savepathname = savefile.getAbsolutePath();  //디렉토리결과+파일이름
+				System.out.println(savepathname);
+			}else{
+				JOptionPane.showMessageDialog(null, "경로를 선택하지않았습니다.","경고", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			ArrayList<String> list = new ArrayList<String>();
+			//내용 저장
+			//데이터 값 가져오기
+			for(int i = 0; i < 7; i++) {
+				list.add((String)table.getValueAt(i,0));
+				list.add(myArea);
+				list.add((String)table.getValueAt(i,1));
+			}
+			
+			//파일 작성
+			try {
+
+				BufferedWriter fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
+				//첫줄 작성
+				fw.write("날짜"+","); fw.write("지역"+","); fw.write(addUnit(gasKor)); fw.newLine();
+				int count = 0;
+				for(String dom : list) {
+					if(count == 2) {
+						//2열이 채워지면 3열이 채워질거임 그냥 넣기 쉼표없이
+						fw.write(dom);
+						//이제 다 채워졌으니 새로운 열로 넘어가야함
+						fw.newLine();
+						//이제 count를 초기화 시켜줌으로써 여기 이프문에 안들어오고 밑에껄로 들어가게함
+						count = 0;
+					}else {
+						fw.write(dom+","); //첫 열, 두번째 열 추가
+						count++; //1과 2임을 거쳐서 카운트 2 다음엔 3열이 들어가게 될거임
+					}
+				}
+				
+				fw.flush();
+				fw.close();
+			}catch(Exception e) {
+				e.printStackTrace();	
+			}
+		}
+	};
+	private static String addUnit(String kor) {
+		switch(kor) {
+		case "이산화질소": case "아황산가스": case "일산화탄소": case "오존":
+			return kor+" (ppm)";
+		case "미세먼지": case "초미세먼지":
+			return kor+" (㎍/㎥)";
+			default:
+				return null;
+		}
+	}
 }
+

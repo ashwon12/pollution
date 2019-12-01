@@ -246,7 +246,15 @@ public class Average extends JPanel{
 			System.out.println("잘못된 매개변수 입니다.");
 			return -1;
 		}
-
-		
+	}
+	protected static String addUnit(String kor) {
+		switch(kor) {
+		case "이산화질소": case "아황산가스": case "일산화탄소": case "오존":
+			return kor+" (ppm)";
+		case "미세먼지": case "초미세먼지":
+			return kor+" (㎍/㎥)";
+			default:
+				return null;
+		}
 	}
 }

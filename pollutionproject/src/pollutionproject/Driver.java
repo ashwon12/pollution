@@ -8,6 +8,13 @@ public class Driver extends JFrame{
 		DB.createDatabase();
 		Main m1 = new Main();
 		m1.setVisible(true);
+		
+		//프로그램 종료 시 데이터베이스를 삭제한다.
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                DB.deleteDatabase();
+            }
+        });
 	}
 
 }

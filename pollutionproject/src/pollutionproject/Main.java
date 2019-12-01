@@ -29,7 +29,7 @@ public class Main extends JFrame{
 	private JMenuItem m_quiz; //퀴즈
 	
 	private JMenu File;
-	private JMenuItem m_save; //엑셀파일로 저장
+	public JMenuItem m_save; //엑셀파일로 저장
 	
 	//툴바에 들어갈 버튼들
 	private JButton t_home;
@@ -39,7 +39,7 @@ public class Main extends JFrame{
 	private JButton t_season;
 	private JButton t_talk;
 	private JButton t_quiz;
-	private JButton t_save;
+	public JButton t_save;
 	
 	//각 기능 패널(카드)
 	private JPanel c_home;
@@ -74,7 +74,7 @@ public class Main extends JFrame{
 		c_month = new Month();
 		c_season = new Season();
 		c_gas = new Gas();
-		c_area = new Area();
+		c_area = new Area(); 
 		
 		cards.add(c_home,"function_Home");
 		cards.add(c_area,"function_Area");
@@ -148,7 +148,7 @@ public class Main extends JFrame{
 		m_save = new JMenuItem("Save");
 		m_save.setPreferredSize(new Dimension(100,40));
 		m_save.setFont(Today.getFont().deriveFont(15.0f));
-		m_save.addActionListener(MenuListner);
+		//m_save.addActionListener(MenuListner);
 		
 		menubar.add(Home);
 		menubar.add(Inquiry);
@@ -204,7 +204,7 @@ public class Main extends JFrame{
 		t_quiz.addActionListener(ToolbarListener);
 		
 		t_save = new JButton(new ImageIcon("./images/save.png"));
-		t_save.addActionListener(ToolbarListener);
+		//t_save.addActionListener(ToolbarListener);
 		
 		tool.add(t_home);
 		tool.addSeparator();
@@ -225,7 +225,26 @@ public class Main extends JFrame{
 		contentPane.add(tool,BorderLayout.NORTH);
 
 	}
-
+	
+	//저장 리스너 추가해주기
+	private void addSaveListener(ActionListener add) {
+		if(t_save.getActionListeners().length != 0) {
+			//삭제
+			for(int i = 0; i < t_save.getActionListeners().length; i++) {
+				t_save.removeActionListener(t_save.getActionListeners()[i]);
+				m_save.removeActionListener(m_save.getActionListeners()[i]);
+			}
+		}
+		//새로운것 추가
+		if(add == null) {//home,talk,quiz
+			System.out.println("리스너 추가가 필요 없습니다.");
+			t_save.addActionListener(e->JOptionPane.showMessageDialog(null,"저장할 수 있는 데이터가 없습니다!"));
+			m_save.addActionListener(e->JOptionPane.showMessageDialog(null,"저장할 수 있는 데이터가 없습니다!"));
+			return;
+		}
+		t_save.addActionListener(add);
+		m_save.addActionListener(add);
+	}
 	//리스너
 	class Listener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
@@ -233,26 +252,44 @@ public class Main extends JFrame{
 			if(e.getSource() == goHome || e.getSource() == t_home) {
 				System.out.println("메인이 눌렸어용!");
 				pickCard.show(cards,"function_Home");
+				
+				addSaveListener(null);
+				
 			}else if(e.getSource() == m_area|| e.getSource() == t_area) {
 				System.out.println("지역별 조회가 눌렸어용!");
 				pickCard.show(cards,"function_Area");
+				
+				addSaveListener(Area.areaSave);
+				
 			}else if(e.getSource() == m_gas|| e.getSource() == t_gas) {
 				System.out.println("기체별조회가 눌렸어용!");
 				pickCard.show(cards,"function_Gas");
+				
+				addSaveListener(Gas.gasSave);
+				
 			}else if(e.getSource() == m_month|| e.getSource() == t_month) {
 				System.out.println("월별 평균조회가 눌렸어용!");
 				pickCard.show(cards,"function_Month");
+				
+				addSaveListener(Month.monthSave);
+				
 			}else if(e.getSource() == m_season|| e.getSource() == t_season) {
 				System.out.println("계절별 평균 조회가 눌렸어용!");
 				pickCard.show(cards,"function_Season");
+				
+				addSaveListener(Season.seasonSave);
+				
 			}else if(e.getSource() == m_talk|| e.getSource() == t_talk) {
 				System.out.println("오늘의 말이 눌렸어용!");
 				pickCard.show(cards,"function_Talk");
+				
+				addSaveListener(null);
+				
 			}else if(e.getSource() == m_quiz|| e.getSource() == t_quiz) {
 				System.out.println("오늘의 퀴즈가 눌렸어용!");
 				pickCard.show(cards,"function_Quiz");
-			}else if(e.getSource() == m_save || e.getSource() == t_save) {
-				System.out.println("저장이 눌렸어여");
+				
+				addSaveListener(null);
 				
 			}
 		}

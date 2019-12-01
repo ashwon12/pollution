@@ -1,6 +1,11 @@
 package pollutionproject;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -22,7 +27,7 @@ public class Season extends Average{
 	//오른쪽패널구성
 	private JPanel North,Center,South;
 	private JLabel label3;
-	private JTable table;
+	private static JTable table;
 	private String title[] = {"계절","농도"};
 	private DefaultTableModel model;
 	private JScrollPane scrollpane;
@@ -38,6 +43,10 @@ public class Season extends Average{
 	
 	//리스너
 	Listener Listener = new Listener();
+	
+	private static int rowSize;
+	private static String myGas;
+	private static String gasKor;
 	
 	public Season() {
 		this.setLayout(new GridLayout(1,2));
@@ -104,7 +113,6 @@ public class Season extends Average{
         
 		add(left);
 	}
-	
 	private void Right() {
 		//레이아웃 설정
 			right = new JPanel(new GridLayout(4,1));
@@ -155,7 +163,6 @@ public class Season extends Average{
 			
 			add(right);
 	}
-	
 	private String changeEnglish(String korean) {
 		switch(korean) {
 		case "이산화질소":
@@ -209,8 +216,6 @@ public class Season extends Average{
 		}
 	}
 	private class Listener implements ActionListener{
-		private int rowSize;
-		private String myGas;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == showResult) { //결과보기 버튼을 눌렀을 경우
@@ -237,6 +242,7 @@ public class Season extends Average{
 				}
 			
 				//내가 선택한 오염물질 종류를 알아야한다.
+				gasKor = (String)gasCombo.getSelectedItem();
 				selectGas = changeEnglish((String)gasCombo.getSelectedItem());
 				temp+=" "+(String)gasCombo.getSelectedItem();
 				temp+="의 평균 농도입니다.<br><br></html>";
@@ -352,6 +358,72 @@ public class Season extends Average{
 			}
 		}
 	}
+	//저장버튼 리스너 만들기
+	public static ActionListener seasonSave = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			System.out.println("계절별의 저장");
+			if(table.getValueAt(0, 1) == "") {
+				JOptionPane.showMessageDialog(null,"저장 할 데이터가 없습니다!");
+				return;
+			}
+			
+			File savefile;
+			String savepathname;
+			
+			JFileChooser chooser = new JFileChooser();// 객체 생성
+			chooser.setCurrentDirectory(new File("C:\\")); // 맨처음경로를 C로 함
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 디렉토리만 선택가능
+			
+			int re = chooser.showSaveDialog(null);
+			
+			if (re == JFileChooser.APPROVE_OPTION) { //디렉토리를 선택했으면
+				savefile = chooser.getSelectedFile(); //선택된 디렉토리 저장하고
+				savepathname = savefile.getAbsolutePath();  //디렉토리결과+파일이름
+				System.out.println(savepathname);
+			}else{
+				JOptionPane.showMessageDialog(null, "경로를 선택하지않았습니다.","경고", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			ArrayList<String> list = new ArrayList<String>();
+			//내용 저장
+			
+			//데이터 값 가져오기
+			for(int i = 0; i < rowSize; i++) {
+				list.add((String)table.getValueAt(i,0));
+				list.add(Double.toString((double) table.getValueAt(i,1)));
+			}
+			
+			//파일 작성
+			try {
+
+				BufferedWriter fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
+				//첫줄 작성
+				fw.write("계절"+","); fw.write(addUnit(gasKor)); fw.newLine();
+				int count = 0;
+				for(String dom : list) {
+					if(count == 1) {
+						//1열이 채워지면 2열이 채워질거임 그냥 넣기 쉼표없이
+						fw.write(dom);
+						//이제 다 채워졌으니 새로운 열로 넘어가야함
+						fw.newLine();
+						//이제 count를 초기화 시켜줌으로써 여기 이프문에 안들어오고 밑에껄로 들어가게함
+						count = 0;
+					}else {
+						fw.write(dom+","); //첫 열 추가
+						count++; //두번째 열로 가야지 그리고 count는 1이야 지금
+					}					
+				}
+				
+				fw.flush();
+				fw.close();
+			}catch(Exception e) {
+				e.printStackTrace();	
+			}
+		}
+	};
 }
 
 
