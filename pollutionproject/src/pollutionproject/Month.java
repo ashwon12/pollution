@@ -350,7 +350,13 @@ public class Month extends Average{
 				JOptionPane.showMessageDialog(null, "경로를 선택하지않았습니다.","경고", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			
+			String isCSV = savepathname.substring(savepathname.length()-4,savepathname.length());
+			if(isCSV.contentEquals(".CSV") || isCSV.equals(".csv")) { //이름 끝에 .CSV가 없다면 자동으로 .CSV를 구한다.
+				System.out.println("csv맞음");
+			}else {
+				System.out.println("csv아님");
+				savepathname += ".CSV";
+			}
 			ArrayList<String> list = new ArrayList<String>();
 			//내용 저장
 			

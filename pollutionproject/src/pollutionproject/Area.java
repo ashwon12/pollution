@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
@@ -386,7 +388,7 @@ public class Area extends JPanel {
 				if(pollution == "ultrafine_dust") {
 					temp[1] = rs.getString(pollution).replaceAll("[^0-9]","");
 				}
-				System.out.println(temp[1]);
+				//System.out.println(temp[1]);
 				pstmt = conn.prepareStatement(sql2.toString());
 				pstmt.setString(1,area);
 				pstmt.setString(2,temp[0]);
@@ -530,6 +532,7 @@ public class Area extends JPanel {
 			
 			//파일 경로 선택
 			JFileChooser chooser = new JFileChooser();// 객체 생성
+		
 			chooser.setCurrentDirectory(new File("C:\\")); // 맨처음경로를 C로 함
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 디렉토리만 선택가능
 			
@@ -542,6 +545,13 @@ public class Area extends JPanel {
 			}else{
 				JOptionPane.showMessageDialog(null, "경로를 선택하지않았습니다.","경고", JOptionPane.WARNING_MESSAGE);
 				return;
+			}
+			String isCSV = savepathname.substring(savepathname.length()-4,savepathname.length());
+			if(isCSV.contentEquals(".CSV") || isCSV.equals(".csv")) { //이름 끝에 .CSV가 없다면 자동으로 .CSV를 구한다.
+				System.out.println("csv맞음");
+			}else {
+				System.out.println("csv아님");
+				savepathname += ".CSV";
 			}
 			
 			ArrayList<String> list = new ArrayList<String>();
