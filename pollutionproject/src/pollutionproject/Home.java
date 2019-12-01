@@ -8,6 +8,11 @@ public class Home extends JPanel{
 	private JLabel welcome; // 웰컴!!
 	private JLabel stuNum; // 학번
 
+	//폰트
+	private Font Big = new Font("맑은 고딕", Font.BOLD, 23);
+	private Font middle = new Font("맑은 고딕", Font.PLAIN, 17);
+	private Font small = new Font("맑은 고딕", Font.BOLD, 13);
+		
 	public Home() {
 
 		setLayout(new BorderLayout());

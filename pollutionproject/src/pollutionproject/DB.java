@@ -14,7 +14,11 @@ public class DB {
 	private static final String DB_URL = "jdbc:mysql://localhost:3306?serverTimezone=UTC";
 	
 	private static final String USER = "root";
-	private static final String PASS = "jj1562";
+	
+	private static String PASS;
+	private static String NAME;
+	
+	private static Driver driver;
 	
 	public static void deleteDatabase() {
 		
@@ -26,7 +30,7 @@ public class DB {
 			conn = makeConnection();
 			
 			stmt = conn.createStatement();
-			String sql = "DROP DATABASE Flower2team";
+			String sql = "DROP DATABASE "+NAME;
 			
 			//사용하는 스키마를 삭제한다.
 			System.out.println("Database delete...");
@@ -43,9 +47,12 @@ public class DB {
 			}
 		}
 	}
-	public static void createDatabase() {
+	public static void createDatabase(String name, String pass) {
 		Statement stmt = null;
 		Connection conn = null; 
+		
+		NAME = name;
+		PASS = pass;
 		try {
 			Class.forName(JDBC_DRIVER);
 			System.out.println("Connecting to database...");
@@ -54,12 +61,12 @@ public class DB {
 			stmt = conn.createStatement();
 			
 			//데이터베이스만들기
-			String sql = "CREATE DATABASE Flower2team";
+			String sql = "CREATE DATABASE "+NAME;
 			stmt.executeUpdate(sql);
 			System.out.println("Database created successfully...");
 			
 			//테이블만들기
-			sql = "USE Flower2team";
+			sql = "USE "+NAME;
 			stmt.executeUpdate(sql);
 			
 			sql = "CREATE TABLE degree"
@@ -111,13 +118,14 @@ public class DB {
 				e.printStackTrace();
 			}
 		}
+		driver.showMain();
 	}
 	
 	public static Connection makeConnection() {
 		
 		Connection conn = null;
 		
-		String url = "jdbc:mysql://localhost:3306/Flower2team";
+		String url = "jdbc:mysql://localhost:3306/"+NAME;
 		try {
 			Class.forName(JDBC_DRIVER);
 			conn = java.sql.DriverManager.getConnection(url,USER,PASS);
@@ -133,6 +141,12 @@ public class DB {
 		return conn;
 		
 	}
+	
+	// mainProcess와 연동
+	public static void setMain(Driver driver) {
+        DB.driver = driver;
+    }
+
 }
 
 
