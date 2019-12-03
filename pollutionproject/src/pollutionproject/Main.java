@@ -31,6 +31,10 @@ public class Main extends JFrame{
 	private JMenu File;
 	public JMenuItem m_save; //엑셀파일로 저장
 	
+	private JMenu Modify; //데이터 수정
+	private JMenuItem m_plus; //삽입+수정
+	private JMenuItem m_minus; //삭제
+	
 	//툴바에 들어갈 버튼들
 	private JButton t_home;
 	private JButton t_area;
@@ -39,6 +43,8 @@ public class Main extends JFrame{
 	private JButton t_season;
 	private JButton t_talk;
 	private JButton t_quiz;
+	private JButton t_plus;
+	private JButton t_minus;
 	public JButton t_save;
 	
 	//각 기능 패널(카드)
@@ -49,7 +55,9 @@ public class Main extends JFrame{
 	private JPanel c_season;
 	private JPanel c_gas;
 	private JPanel c_area;
-
+	private JPanel c_plus;
+	private JPanel c_minus;
+	
 	//생성자, 여기에서 컴포넌트들 설정
 	public Main() {
 		//현재 큰 틀
@@ -75,6 +83,8 @@ public class Main extends JFrame{
 		c_season = new Season();
 		c_gas = new Gas();
 		c_area = new Area(); 
+		c_plus = new Plus();
+		c_minus = new Minus();
 		
 		cards.add(c_home,"function_Home");
 		cards.add(c_area,"function_Area");
@@ -83,7 +93,8 @@ public class Main extends JFrame{
 		cards.add(c_season,"function_Season");
 		cards.add(c_talk,"function_Talk");
 		cards.add(c_quiz,"function_Quiz");
-
+		cards.add(c_plus,"function_Plus");
+		cards.add(c_minus,"function_Minus");
 		
 		//큰 틀에 카드 넣기
 		contentPane.add(cards);
@@ -103,6 +114,9 @@ public class Main extends JFrame{
 		Today= new JMenu("TODAY'S");
 		Today.setPreferredSize(new Dimension(125,40));
 		Today.setFont(Today.getFont().deriveFont(23.0f));
+		Modify = new JMenu("MODIFY");
+		Modify.setPreferredSize(new Dimension(135,40));
+		Modify.setFont(Today.getFont().deriveFont(23.0f));
 		File = new JMenu("FILE");
 		File.setPreferredSize(new Dimension(100,40));
 		File.setFont(Inquiry.getFont().deriveFont(23.0f));
@@ -145,14 +159,23 @@ public class Main extends JFrame{
 		m_quiz.setFont(Today.getFont().deriveFont(15.0f));
 		m_quiz.addActionListener(MenuListner);
 		
+		m_plus = new JMenuItem("Insert / Update");
+		m_plus.setPreferredSize(new Dimension(135,40));
+		m_plus.setFont(Today.getFont().deriveFont(15.0f));
+		m_plus.addActionListener(MenuListner);
+		m_minus = new JMenuItem("Delete");
+		m_minus.setPreferredSize(new Dimension(135,40));
+		m_minus.setFont(Today.getFont().deriveFont(15.0f));
+		m_minus.addActionListener(MenuListner);
+		
 		m_save = new JMenuItem("Save");
 		m_save.setPreferredSize(new Dimension(100,40));
 		m_save.setFont(Today.getFont().deriveFont(15.0f));
-		//m_save.addActionListener(MenuListner);
 		
 		menubar.add(Home);
 		menubar.add(Inquiry);
 		menubar.add(Today);
+		menubar.add(Modify);
 		menubar.add(File);
 		
 		Home.add(goHome);
@@ -165,6 +188,9 @@ public class Main extends JFrame{
 		
 		Today.add(m_talk);
 		Today.add(m_quiz);
+
+		Modify.add(m_plus);
+		Modify.add(m_minus);
 		
 		File.add(m_save);
 		
@@ -204,7 +230,12 @@ public class Main extends JFrame{
 		t_quiz.addActionListener(ToolbarListener);
 		
 		t_save = new JButton(new ImageIcon("./images/save.png"));
-		//t_save.addActionListener(ToolbarListener);
+		
+		t_plus = new JButton(new ImageIcon("./images/plus.png"));
+		t_plus.addActionListener(ToolbarListener);
+		
+		t_minus = new JButton(new ImageIcon("./images/minus.png"));
+		t_minus.addActionListener(ToolbarListener);
 		
 		tool.add(t_home);
 		tool.addSeparator();
@@ -219,6 +250,10 @@ public class Main extends JFrame{
 		tool.add(t_talk);
 		tool.addSeparator();
 		tool.add(t_quiz);
+		tool.addSeparator();
+		tool.add(t_plus);
+		tool.addSeparator();
+		tool.add(t_minus);
 		tool.addSeparator();
 		tool.add(t_save);
 		
@@ -288,6 +323,18 @@ public class Main extends JFrame{
 			}else if(e.getSource() == m_quiz|| e.getSource() == t_quiz) {
 				System.out.println("오늘의 퀴즈가 눌렸어용!");
 				pickCard.show(cards,"function_Quiz");
+				
+				addSaveListener(null);
+				
+			}else if(e.getSource() == m_plus|| e.getSource() == t_plus) {
+				System.out.println("데이터 추가/수정이 눌렷쪙!");
+				pickCard.show(cards,"function_Plus");
+				
+				addSaveListener(null);
+				
+			}else if(e.getSource() == m_minus|| e.getSource() == t_minus) {
+				System.out.println("데이터 삭제가 눌렸졍!");
+				pickCard.show(cards,"function_Minus");
 				
 				addSaveListener(null);
 				
