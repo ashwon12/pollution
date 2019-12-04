@@ -20,6 +20,7 @@ public class DB {
 	private static String NAME;
 
 	private static Driver driver;
+	private static LoginView login;
 
 	public static void deleteDatabase() {
 
@@ -94,11 +95,15 @@ public class DB {
 			sql = "LOAD DATA INFILE '" + filePath + "' INTO TABLE degree CHARACTER SET UTF8 FIELDS TERMINATED BY ','";
 			stmt.executeUpdate(sql);
 			System.out.println(stmt.toString());
-
+			
+			JOptionPane.showMessageDialog(null, "Success");
+			Thread.sleep(1000);
 		} catch (ClassNotFoundException e) {
 			System.out.println("오류:" + e);
 		} catch (SQLException e) {
 			System.out.println("오류:" + e);
+			JOptionPane.showMessageDialog(null, "Faild");
+			//login.isLoginCheck();
 		} catch (Exception e) {
 			System.out.println("오류:" + e);
 		} finally {
@@ -141,8 +146,9 @@ public class DB {
 	}
 
 	// mainProcess와 연동
-	public static void setMain(Driver driver) {
+	public static void setMain(Driver driver,LoginView log) {
 		DB.driver = driver;
+		DB.login = log;
 	}
 
 }

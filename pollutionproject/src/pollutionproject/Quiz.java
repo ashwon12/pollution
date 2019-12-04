@@ -163,7 +163,7 @@ public class Quiz extends JPanel {
 					}
 				}
 				if (count < 5) {
-					JOptionPane.showMessageDialog(null, "문제를 다 풀어주세요!");
+					JOptionPane.showMessageDialog(null, "모든 문제를 풀어주세요!");
 					return;
 				}
 

@@ -4,7 +4,7 @@ import javax.swing.JFrame;
 
 public class Driver extends JFrame {
 
-	LoginView loginView;
+	static LoginView loginView;
 	Main main;
 
 	public static void main(String[] args) {
@@ -12,7 +12,7 @@ public class Driver extends JFrame {
 		Driver driver = new Driver();
 
 		driver.loginView = new LoginView();
-		DB.setMain(driver); // 로그인 창에게 메인 클래스 보내기
+		DB.setMain(driver,loginView); // 로그인 창에게 메인 클래스 보내기
 		// DB.createDatabase();
 
 		// 프로그램 종료 시 데이터베이스를 삭제한다.
