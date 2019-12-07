@@ -396,17 +396,18 @@ public class Main extends JFrame {
 			}
 		}
 
-		public void setScreenMin() {
-			Main.this.setSize(1000, 170);
-			Main.this.setLocation(1000, 0);
-			isminimize = !isminimize;
-		}
+		 public void setScreenMin() {
+	         Main.this.setSize(930, 165);
+	         Main.this.setLocation(996, 0);
+	         isminimize = !isminimize;
+	      }
 
-		public void setScreenMax() {
-			Main.this.setSize(1100, 790);
-			Main.this.setLocation(400, 100);
-			isminimize = !isminimize;
-		}
+	      public void setScreenMax() {
+	         Main.this.setSize(1100, 790);
+	         Main.this.setLocation(400, 100);
+	         isminimize = !isminimize;
+	      }
+
 
 	}
 }
