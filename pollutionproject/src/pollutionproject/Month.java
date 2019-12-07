@@ -17,7 +17,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class Month extends Average {
+public class Month extends JPanel{
 
 	private JPanel left, right; // 왼쪽 : 선택, 오른쪽 : 결과
 
@@ -48,7 +48,8 @@ public class Month extends Average {
 
 	// 리스너
 	Listener Listener = new Listener();
-
+	private static Average ave;
+	
 	private static int rowSize;
 	private static String myGas;
 	private static String gasKor;
@@ -272,10 +273,11 @@ public class Month extends Average {
 				// 가져와야 하는 것 : 선택한 기체에 대한 각 월 평균 =>여길 통해서 전체 월 평균도 구해준다.
 				int size = selectMonth.size();
 				double[] getMonthAverage = new double[size + 1]; // 마지막에는 월 총 평균을 넣어준다.
-
+				ave = new Average();
+				
 				int count = 0;
 				for (int m : selectMonth) {
-					getMonthAverage[count] = getAverage(m, selectGas); // 인수: 가져올 월
+					getMonthAverage[count] = ave.getAverage(m, selectGas); // 인수: 가져올 월
 					count++;
 				}
 
@@ -382,7 +384,7 @@ public class Month extends Average {
 						new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
 				// 첫줄 작성
 				fw.write("월" + ",");
-				fw.write(addUnit(gasKor));
+				fw.write(ave.addUnit(gasKor));
 				fw.newLine();
 				int count = 0;
 				for (String dom : list) {

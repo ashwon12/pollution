@@ -2,7 +2,12 @@ package pollutionproject;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.*;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
@@ -44,7 +49,7 @@ public class Plus extends JPanel {
 		this.setLayout(new GridLayout(6, 1));
 		this.setBackground(new Color(250, 250, 250));
 		setPanel();
-		// setRight();
+
 	}
 
 	private void setPanel() {
@@ -282,9 +287,8 @@ public class Plus extends JPanel {
 				insertStatement.setString(2, area);
 				insertStatement.setString(3, value);
 
-				int result = insertStatement.executeUpdate();
-				System.out.println(result);
-				
+				insertStatement.executeUpdate();
+				insertStatement.close();
 			} else {
 				// update
 				rs.beforeFirst();
@@ -304,13 +308,33 @@ public class Plus extends JPanel {
 						updateStatement.setString(3, area);
 
 						updateStatement.executeUpdate();
-
+						updateStatement.close();
 					} else {
-						System.out.println("안비엇쪙" + rs.getString(gas));
-						JOptionPane.showMessageDialog(null, "<html>이전 데이터가 있습니다.<br> 데이터를 <u>수정</u>합니다! <br>"
-								+ rs.getString(gas) + "=>" + value + "</html>");
 
-						// 해당 날짜의 해당 지역에 "값있음"였던 해당 오염물질 값을 value로 바꿔줌.
+						// 끝 열일 경우
+						byte[] byte_str = new byte[rs.getString(gas).length()];
+						int j = 0;
+						// 문자열의 한문자씩 byte단위로 byte배열 byte_str에 저장하기.
+						for (int i = 0; i < rs.getString(gas).length(); i++)
+							byte_str[i] = (byte) rs.getString(gas).charAt(i); // 바이트의 단위로 인식할 수 있게 형변환.
+
+						// 자료형 문자, byte단위의 문자 비교하기
+						for (byte code : byte_str) {
+							System.out.println(rs.getString(gas).charAt(j++) + " : " + code);
+							// 첫번째가 숫자라면 빈값 아님
+							if (code >= 48 && code <= 57) {
+
+								System.out.println("안비엇쪙" + rs.getString(gas));
+								JOptionPane.showMessageDialog(null, "<html>이전 데이터가 있습니다.<br> 데이터를 <u>수정</u>합니다! <br>"
+										+ rs.getString(gas) + "=>" + value + "</html>");
+								break;
+							}
+							if (code == 13) {
+								JOptionPane.showMessageDialog(null,
+										"<html>이전 데이터가 없습니다. <br>데이터를 <u>추가</u>합니다!</html>");
+
+							}
+						}
 						StringBuilder update = new StringBuilder();
 						update.append("UPDATE degree SET " + gas + " = ?");
 						update.append(" WHERE date = ? AND area = ?;");
@@ -321,14 +345,16 @@ public class Plus extends JPanel {
 						updateStatement.setString(3, area);
 
 						updateStatement.executeUpdate();
-
+						updateStatement.close();
 					}
 				}
 			}
-
+			pstmt.close();
+			conn.close();
 		} catch (SQLException e) {
 			System.out.println("오류:" + e);
 		}
 
 	}
+
 }

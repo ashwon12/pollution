@@ -3,7 +3,7 @@ package pollutionproject;
 import javax.swing.*;
 import java.sql.*;
 
-public class Average extends JPanel {
+public class Average{
 
 	protected Connection conn;
 
@@ -265,7 +265,7 @@ public class Average extends JPanel {
 		}
 	}
 
-	protected static String addUnit(String kor) {
+	protected String addUnit(String kor) {
 		switch (kor) {
 		case "이산화질소":
 		case "아황산가스":

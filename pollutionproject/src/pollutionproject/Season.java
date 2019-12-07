@@ -13,7 +13,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class Season extends Average {
+public class Season extends JPanel{
 
 	private JPanel left, right; // 왼쪽 : 선택, 오른쪽 : 결과
 
@@ -44,7 +44,7 @@ public class Season extends Average {
 
 	// 리스너
 	Listener Listener = new Listener();
-
+	private static Average ave;
 	private static int rowSize;
 	private static String myGas;
 	private static String gasKor;
@@ -270,7 +270,8 @@ public class Season extends Average {
 				// 선택 정보를 통해 데이터를 맞게 가져온다.
 				int size = selectSeason.size();
 				double[] getSeasonAverage = new double[size + 1]; // 마지막에 선택계절 총 평균을 넣어준다. 데이터 값이 들어갈거
-
+				
+				ave = new Average();
 				// 0으로 초기화
 				for (int i = 0; i < size; i++) {
 					getSeasonAverage[i] = 0;
@@ -284,29 +285,29 @@ public class Season extends Average {
 					case "봄":
 						// 각 기체의 3,4,5월 평균을 가져온다
 						for (int m = 2; m < 5; m++) {
-							getSeasonAverage[count] += getAverage(m, selectGas);
+							getSeasonAverage[count] += ave.getAverage(m, selectGas);
 						}
 						count++;
 						break;
 					case "여름":
 						// 6,7,8월 평균을 가져온다
 						for (int m = 5; m < 8; m++) {
-							getSeasonAverage[count] += getAverage(m, selectGas);
+							getSeasonAverage[count] += ave.getAverage(m, selectGas);
 						}
 						count++;
 						break;
 					case "가을":
 						// 9,10,11월 평균을 가져온다
 						for (int m = 8; m < 11; m++) {
-							getSeasonAverage[count] += getAverage(m, selectGas);
+							getSeasonAverage[count] += ave.getAverage(m, selectGas);
 						}
 						count++;
 						break;
 					case "겨울":
 						// 12,1,2월 평균을 가져온다
-						getSeasonAverage[count] += getAverage(11, selectGas); // 12월
-						getSeasonAverage[count] += getAverage(0, selectGas); // 1월
-						getSeasonAverage[count] += getAverage(1, selectGas); // 2월
+						getSeasonAverage[count] += ave.getAverage(11, selectGas); // 12월
+						getSeasonAverage[count] += ave.getAverage(0, selectGas); // 1월
+						getSeasonAverage[count] += ave.getAverage(1, selectGas); // 2월
 
 						count++;
 						break;
@@ -422,7 +423,7 @@ public class Season extends Average {
 						new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
 				// 첫줄 작성
 				fw.write("계절" + ",");
-				fw.write(addUnit(gasKor));
+				fw.write(ave.addUnit(gasKor));
 				fw.newLine();
 				int count = 0;
 				for (String dom : list) {

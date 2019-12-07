@@ -370,7 +370,7 @@ public class Main extends JFrame {
 				System.out.println("데이터 추가/수정이 눌렷쪙!");
 				pickCard.show(cards, "function_Plus");
 
-				addSaveListener(null);
+				addSaveListener(Minus.allSave);
 
 				if (isminimize) {
 					setScreenMax();
@@ -380,7 +380,7 @@ public class Main extends JFrame {
 				System.out.println("데이터 삭제가 눌렸졍!");
 				pickCard.show(cards, "function_Minus");
 
-				addSaveListener(null);
+				addSaveListener(Minus.allSave);
 
 				if (isminimize) {
 					setScreenMax();
