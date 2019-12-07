@@ -603,6 +603,8 @@ public class Area extends JPanel {
 				fw.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				JOptionPane.showMessageDialog(null,"지역별 조회 결과를 저장했습니다!");
 			}
 		}
 	};

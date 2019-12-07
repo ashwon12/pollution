@@ -515,6 +515,8 @@ public class Gas extends JPanel {
 				fw.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				JOptionPane.showMessageDialog(null,"오염물질 별 내림차순 조회 결과를 저장했습니다!");
 			}
 		}
 	};

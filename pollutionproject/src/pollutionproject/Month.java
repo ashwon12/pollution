@@ -405,6 +405,8 @@ public class Month extends JPanel{
 				fw.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				JOptionPane.showMessageDialog(null,"월별 평균 조회 결과를 저장했습니다!");
 			}
 		}
 	};
