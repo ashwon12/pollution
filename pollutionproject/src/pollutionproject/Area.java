@@ -576,7 +576,6 @@ public class Area extends JPanel {
 
 			// 파일 작성
 			try {
-
 				BufferedWriter fw = new BufferedWriter(
 						new OutputStreamWriter(new FileOutputStream(savepathname), "EUC_KR"));
 				// 첫줄 작성
